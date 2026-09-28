@@ -1,0 +1,3550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jonathan Coles, Senior Designer. UI/UX, digital and 3D visualisation, Bristol</title>
+<meta name="description" content="Jonathan Coles, senior designer in Bristol. Twenty-five years across e-commerce UI/UX, packaging and print artwork, and 3D product visualisation. Selected work for The Somerset Toiletry Co., Codemasters and Matinee Sound &amp; Vision.">
+<meta name="theme-color" content="#080B0D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS
+   The whole system is five colours, one typeface, zero radius.
+   ============================================================ */
+:root{
+  --bg:#080B0D;
+  --text:#F3F3F3;
+  --dim:#8A8A8A;
+  --line:rgba(243,243,243,.11);
+  --line-strong:rgba(243,243,243,.22);
+  --accent:#FF5A36;
+
+  --font:"Inter","Archivo",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+
+  --pad-x:clamp(18px,2.4vw,34px);
+  --pad-y:clamp(16px,1.6vw,22px);
+
+  /* The viewport meta opts into viewport-fit=cover, so every edge that
+     touches the frame has to pay the notch / home-indicator tax itself. */
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-r:env(safe-area-inset-right,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+
+  --micro:10px;
+  --track:.20em;
+
+  --ease:cubic-bezier(.16,1,.3,1);
+  --dur:.62s;
+
+  --z-field:0;
+  --z-scrim:1;
+  --z-ui:2;
+  --z-overlay:8;
+  --z-cursor:9;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+
+/* Utility ---------------------------------------------------- */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+.micro{
+  font-size:var(--micro);
+  letter-spacing:var(--track);
+  text-transform:uppercase;
+  font-weight:500;
+  color:var(--dim);
+  line-height:1.9;
+}
+.micro-bright{color:var(--text)}
+
+:focus{outline:none}
+:focus-visible{
+  outline:1px solid var(--accent);
+  outline-offset:4px;
+}
+::selection{background:rgba(255,90,54,.28)}
+
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+
+/* ============================================================
+   SHELL
+   ============================================================ */
+/* inset:0 fully determines the height, so the min-height:100dvh next to
+   it never applied. Where the fixed containing block resolves to the
+   large viewport (Chrome on Android with body scrolling disabled, so the
+   URL bar never retracts) that put the footer and the bottom of the hero
+   below the fold with no way to scroll to them. State the height
+   explicitly and leave `bottom` auto so the box is not over-constrained. */
+.shell{
+  position:fixed;
+  top:0;left:0;right:0;bottom:auto;
+  height:100vh;
+  height:100dvh;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+}
+
+/* ---- Header ------------------------------------------------ */
+.header{
+  position:relative;
+  z-index:var(--z-ui);
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:16px;
+  padding:calc(var(--pad-y) + var(--safe-t)) calc(var(--pad-x) + var(--safe-r)) var(--pad-y) calc(var(--pad-x) + var(--safe-l));
+  border-bottom:1px solid var(--line);
+  height:calc(64px + var(--safe-t));
+}
+.wordmark{
+  font-size:12px;
+  letter-spacing:.16em;
+  font-weight:600;
+  text-transform:uppercase;
+}
+.mark{
+  width:16px;height:16px;
+  color:var(--dim);
+  transition:color .4s var(--ease);
+}
+.mark svg{display:block;width:100%;height:100%;transform-origin:50% 50%}
+.mark.is-pulsing{color:var(--text)}
+
+.nav{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:clamp(14px,2vw,26px);
+  white-space:nowrap;
+}
+.nav button{
+  font-size:var(--micro);
+  letter-spacing:var(--track);
+  text-transform:uppercase;
+  font-weight:500;
+  color:var(--dim);
+  transition:color .3s var(--ease);
+}
+.nav button:hover,.nav button[aria-expanded="true"]{color:var(--text)}
+.status{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:var(--micro);letter-spacing:var(--track);
+  text-transform:uppercase;color:var(--accent);font-weight:500;
+  padding-left:clamp(6px,1.4vw,16px);
+  border-left:1px solid var(--line);
+}
+.status i{
+  width:5px;height:5px;background:var(--accent);display:block;
+  animation:signal 2.4s steps(1,end) infinite;
+}
+@keyframes signal{0%,62%{opacity:1}63%,100%{opacity:.2}}
+
+.menu-btn{display:none}
+
+/* ---- Stage ------------------------------------------------- */
+.stage{
+  position:relative;
+  overflow:hidden;
+  /* Not `none`: that also kills pinch-zoom, which is a WCAG 1.4.4
+     problem on a page with no other way to enlarge anything. The swipe
+     handlers are passive and do not need the browser to stand down. */
+  touch-action:pinch-zoom;
+}
+#field{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;
+  z-index:var(--z-field);
+}
+/* Legibility scrim. Two soft ramps, no blobs. */
+.scrim{
+  position:absolute;inset:0;
+  z-index:var(--z-scrim);
+  pointer-events:none;
+  background:
+    linear-gradient(to top,rgba(8,11,13,.92) 0%,rgba(8,11,13,.55) 22%,rgba(8,11,13,0) 48%),
+    radial-gradient(120% 80% at 50% 46%,rgba(8,11,13,0) 40%,rgba(8,11,13,.55) 100%);
+}
+
+/* WebGL fallback --------------------------------------------- */
+.fallback{
+  position:absolute;inset:0;
+  z-index:var(--z-field);
+  display:none;
+  align-items:center;justify-content:center;
+}
+.fallback.is-on{display:flex}
+.fallback span{
+  font-size:clamp(64px,17vw,220px);
+  font-weight:700;
+  letter-spacing:-.04em;
+  line-height:1;
+  color:transparent;
+  background-image:radial-gradient(rgba(243,243,243,.9) 42%,transparent 43%);
+  background-size:5px 5px;
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+
+/* ---- Hero UI ----------------------------------------------- */
+.ui{
+  position:absolute;inset:0;
+  z-index:var(--z-ui);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,auto);
+  grid-template-rows:auto minmax(0,1fr) auto;
+  padding:clamp(18px,2.2vw,30px) calc(var(--pad-x) + var(--safe-r)) clamp(18px,2.2vw,30px) calc(var(--pad-x) + var(--safe-l));
+  pointer-events:none;
+}
+.ui > *{pointer-events:none}
+.ui a,.ui button{pointer-events:auto}
+
+.meta-tl{grid-column:1;grid-row:1;max-width:34ch}
+.meta-tl .tl-short{display:none}
+.meta-tr{grid-column:2;grid-row:1;text-align:right}
+
+/* Prev / next, mobile only. Replaces the fourteen-dot rail, which is a
+   4px target on a touch screen. */
+.pager{display:none}
+.pager button{
+  width:44px;height:44px;
+  display:grid;place-items:center;
+  border:1px solid var(--line-strong);
+  color:var(--text);
+  transition:background .3s var(--ease),border-color .3s var(--ease);
+}
+.pager button:active{background:rgba(243,243,243,.08);border-color:var(--text)}
+.pager svg{width:15px;height:9px;overflow:visible}
+.pager svg line,.pager svg polyline{stroke:currentColor;stroke-width:1;fill:none}
+.pager .prev svg{transform:scaleX(-1)}
+
+.lower{
+  grid-column:1 / -1;grid-row:3;
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);
+  align-items:end;
+  gap:clamp(24px,5vw,80px);
+  padding-bottom:clamp(4px,1.4vw,14px);
+}
+
+/* Statement */
+.statement{
+  margin:0 0 18px;
+  font-size:clamp(30px,3.6vw,52px);
+  font-weight:500;
+  /* Caps need air, not the negative tracking a lowercase headline wants */
+  letter-spacing:.012em;
+  line-height:1.02;
+  text-transform:uppercase;
+  max-width:none;
+  text-wrap:balance;
+}
+.note{
+  margin:0 0 22px;
+  max-width:44ch;
+  font-size:13px;
+  line-height:1.62;
+  color:var(--dim);
+}
+.note b{color:var(--text);font-weight:500}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:12px;
+  padding:12px 18px;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;
+  border:1px solid var(--line-strong);
+  background:transparent;
+  color:var(--text);
+  transition:background .35s var(--ease),border-color .35s var(--ease),transform .35s var(--ease);
+}
+.btn svg{width:14px;height:8px;overflow:visible}
+.btn svg line,.btn svg polyline{stroke:currentColor;stroke-width:1;fill:none}
+.btn:hover{background:rgba(243,243,243,.06);border-color:var(--text)}
+.btn:active{transform:translateY(1px)}
+.btn-quiet{border-color:var(--line)}
+.btn-quiet:hover{border-color:var(--line-strong)}
+
+/* Project meta (right lower) */
+.projmeta{
+  text-align:right;
+  display:flex;flex-direction:column;align-items:flex-end;
+  gap:10px;
+  min-width:min(30ch,34vw);
+}
+.counter{
+  font-size:11px;letter-spacing:.14em;color:var(--dim);
+  font-variant-numeric:tabular-nums;
+}
+.counter em{font-style:normal;color:var(--text);display:inline-block;overflow:hidden;vertical-align:bottom;height:1.2em}
+.counter em span{display:block;transition:transform .4s var(--ease)}
+.projword{
+  font-size:clamp(26px,2.6vw,40px);
+  font-weight:600;
+  letter-spacing:-.02em;
+  line-height:1;
+}
+.projdesc{
+  margin:0;
+  font-size:13px;
+  line-height:1.5;
+  color:var(--dim);
+  max-width:26ch;
+}
+/* State swap: content lifts, dims, returns. Motion mirrors the field. */
+.swap{
+  transition:transform .5s var(--ease),opacity .5s var(--ease);
+}
+.is-swapping .swap{transform:translateY(9px);opacity:0}
+
+.viewlink{
+  display:inline-flex;align-items:center;gap:10px;
+  margin-top:4px;
+  font-size:10px;letter-spacing:var(--track);text-transform:uppercase;font-weight:500;
+  color:var(--accent);
+}
+.viewlink svg{width:22px;height:8px;overflow:visible}
+.viewlink svg line,.viewlink svg polyline{stroke:currentColor;stroke-width:1;fill:none}
+.viewlink svg{transition:transform .4s var(--ease)}
+.viewlink:hover svg{transform:translateX(5px)}
+
+/* ---- Right rail (project index) ---------------------------- */
+.rail{
+  position:absolute;
+  right:calc(var(--pad-x) - 4px);
+  top:50%;
+  transform:translateY(-50%);
+  z-index:var(--z-ui);
+  display:flex;flex-direction:column;align-items:center;gap:11px;
+}
+.rail button{
+  position:relative;
+  width:18px;height:11px;
+  display:grid;place-items:center;
+  pointer-events:auto;
+}
+.rail button::after{
+  content:"";
+  width:4px;height:4px;
+  background:var(--dim);
+  opacity:.5;
+  transition:opacity .35s var(--ease),background .35s var(--ease),transform .35s var(--ease);
+}
+.rail button:hover::after{opacity:1}
+.rail button[aria-current="true"]::after{
+  background:var(--accent);
+  opacity:1;
+  transform:scale(1.7);
+}
+.rail button span{
+  position:absolute;right:20px;top:50%;
+  transform:translate(6px,-50%);
+  font-size:9px;letter-spacing:var(--track);text-transform:uppercase;
+  color:var(--dim);white-space:nowrap;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s var(--ease),transform .3s var(--ease);
+}
+.rail button:hover span,.rail button:focus-visible span{opacity:1;transform:translate(0,-50%)}
+
+/* ---- Footer ------------------------------------------------ */
+.footer{
+  position:relative;z-index:var(--z-ui);
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  align-items:center;
+  border-top:1px solid var(--line);
+  padding:14px calc(var(--pad-x) + var(--safe-r)) calc(14px + var(--safe-b)) calc(var(--pad-x) + var(--safe-l));
+  height:calc(52px + var(--safe-b));
+}
+.footer > *{margin:0}
+.footer .c{text-align:center}
+.footer .r{text-align:right;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.hintline{
+  display:block;width:26px;height:1px;background:var(--line-strong);
+  position:relative;overflow:hidden;
+}
+.hintline::after{
+  content:"";position:absolute;inset:0;background:var(--accent);
+  transform:translateX(-100%);
+  animation:sweep 3.4s var(--ease) infinite;
+}
+@keyframes sweep{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
+
+/* ============================================================
+   OVERLAYS
+   ============================================================ */
+.overlay{
+  position:fixed;inset:0;
+  z-index:var(--z-overlay);
+  display:none;
+  flex-direction:column;
+  background:rgba(8,11,13,.9);
+  backdrop-filter:blur(7px);
+  -webkit-backdrop-filter:blur(7px);
+  padding:calc(clamp(20px,4vw,56px) + var(--safe-t)) calc(var(--pad-x) + var(--safe-r))
+          calc(clamp(20px,4vw,56px) + var(--safe-b)) calc(var(--pad-x) + var(--safe-l));
+  overflow:hidden;
+}
+.overlay.is-open{display:flex;animation:fade .4s var(--ease)}
+.overlay.is-closing{display:flex;pointer-events:none;animation:fadeout .34s var(--ease) forwards}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes fadeout{from{opacity:1}to{opacity:0}}
+
+/* Under any panel the hero copy steps back, so the only thing showing
+   through is the field itself. */
+.ui,.rail,.header,.footer{transition:opacity .45s var(--ease)}
+body.has-overlay .ui,body.has-overlay .rail,body.has-overlay .header,body.has-overlay .footer{opacity:0}
+
+/* The work index previews each state in the field behind it, so it has
+   to let the field through. Darker on the reading side, open on the right. */
+#ov-work{
+  background:linear-gradient(90deg,rgba(8,11,13,.9) 0%,rgba(8,11,13,.74) 48%,rgba(8,11,13,.42) 100%);
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+@media (max-width:760px){
+  /* one column of rows over the whole width: an even veil reads better */
+  #ov-work{background:rgba(8,11,13,.8)}
+}
+/* The camera dives into the glyph first; the panel arrives on the far
+   side of that move rather than on top of it. */
+#ov-project.is-open{animation:projIn .8s var(--ease)}
+#ov-project.is-open > *{animation:projRise .9s var(--ease) both}
+#ov-project.is-open > :nth-child(2){animation-delay:.06s}
+#ov-project.is-open > :nth-child(3){animation-delay:.12s}
+@keyframes projIn{0%,32%{opacity:0}100%{opacity:1}}
+@keyframes projRise{0%,30%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
+.overlay-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:20px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:clamp(12px,2vw,24px);
+  flex:0 0 auto;
+}
+.overlay h2{
+  margin:0;font-size:clamp(20px,2.2vw,30px);font-weight:500;letter-spacing:-.02em;
+}
+.close{
+  font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;
+  color:var(--dim);transition:color .3s var(--ease);
+}
+.close:hover{color:var(--text)}
+.back{
+  font-size:18px;color:var(--dim);transition:color .3s var(--ease);
+  margin-right:12px;flex:0 0 auto;
+}
+.back:hover{color:var(--text)}
+
+/* Work index */
+.index{list-style:none;margin:0;padding:0;max-width:1200px}
+.index li{border-bottom:1px solid var(--line)}
+.index button{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) minmax(0,1.1fr) 60px;
+  align-items:baseline;
+  gap:clamp(12px,2vw,28px);
+  width:100%;
+  padding:clamp(11px,1.4vw,17px) 4px;
+  text-align:left;
+  transition:padding-left .45s var(--ease),color .3s var(--ease);
+}
+.index button:hover,.index button:focus-visible{padding-left:14px}
+.index .n{font-size:10px;letter-spacing:.14em;color:var(--dim);font-variant-numeric:tabular-nums}
+.index .w{font-size:clamp(17px,1.9vw,26px);font-weight:500;letter-spacing:-.02em}
+.index .d{font-size:12px;color:var(--dim)}
+.index .y{font-size:10px;letter-spacing:.14em;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.index button:hover .n,.index button:focus-visible .n{color:var(--accent)}
+.index li[data-current="true"] .w{color:var(--accent)}
+
+/* Mobile menu. Studio and Contact had no entry point on a phone at all:
+   .nav was display:none and the only button opened the work index. */
+.menu-list{max-width:620px}
+.menu-list button{
+  display:block;width:100%;
+  padding:19px 2px;
+  text-align:left;
+  border-bottom:1px solid var(--line);
+  transition:padding-left .45s var(--ease);
+}
+.menu-list button:active{padding-left:10px}
+.menu-list .l{
+  display:block;
+  font-size:clamp(25px,7.4vw,34px);font-weight:500;letter-spacing:-.025em;line-height:1.1;
+}
+.menu-list .s{
+  display:block;margin-top:5px;
+  font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;
+  color:var(--dim);
+}
+.menu-status{
+  display:inline-flex;align-items:center;gap:7px;
+  margin:28px 0 0;
+  font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;
+  color:var(--accent);font-weight:500;
+}
+.menu-status i{
+  width:5px;height:5px;background:var(--accent);display:block;
+  animation:signal 2.4s steps(1,end) infinite;
+}
+
+/* Prose panels */
+.prose{max-width:62ch;flex:0 0 auto}
+.prose p{margin:0 0 12px;font-size:15px;line-height:1.7;color:var(--dim)}
+.prose p strong{color:var(--text);font-weight:500}
+.cols{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:clamp(20px,3vw,48px);
+  max-width:1000px;
+  margin-top:clamp(20px,3vw,40px);
+}
+.cols h3{margin:0 0 10px;font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;color:var(--dim);font-weight:500}
+.cols ul{list-style:none;margin:0;padding:0}
+.cols li{font-size:13px;line-height:1.9}
+.bigmail{
+  display:inline-block;
+  font-size:clamp(22px,4vw,46px);
+  font-weight:500;letter-spacing:-.03em;
+  border-bottom:1px solid var(--line-strong);
+  padding-bottom:6px;
+  transition:border-color .35s var(--ease),color .35s var(--ease);
+}
+.bigmail:hover{color:var(--accent);border-color:var(--accent)}
+
+/* Project detail */
+.detail-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:clamp(12px,2vw,24px);
+  max-width:900px;
+  margin-top:clamp(12px,2vw,24px);
+  border-top:1px solid var(--line);
+  padding-top:16px;
+  flex:0 0 auto;
+}
+.detail-grid div span{display:block;font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.detail-grid div p{margin:0;font-size:13px;line-height:1.6}
+
+/* Project media: a filmstrip, frames butted edge to edge with no
+   gap or mount, that scrolls itself at a steady pace and loops
+   without a seam. The sequence is rendered twice back to back and
+   the track travels exactly one copy's width, so the loop point is
+   invisible.
+
+   Strip height. It is a band, not a wall: the height is set so a
+   typical 3:2 frame takes a fixed share of the screen WIDTH (about
+   40% on desktop, 55% on tablet, 80% on a phone), so the next frame
+   is always in view and the sequence reads as a sequence. A second
+   cap on viewport height keeps it from crowding the copy on short
+   or landscape screens, and flex-shrink lets it give way further if
+   the copy runs long. The strip and its controls travel as one unit,
+   anchored to the foot of the panel like a player's timeline. */
+:root{
+  --strip-h:clamp(240px, min(26vw, 46vh), 520px);
+  --strip-gap:12px;
+}
+@media (max-width:1080px){
+  :root{ --strip-h:clamp(210px, min(37vw, 34vh), 400px); --strip-gap:10px; }
+}
+/* Portrait tablets have height to spare: the frame can take about
+   three-quarters of the width and still show the next one, and the
+   unit sits centred in what is left rather than stranding a void. */
+@media (min-width:761px) and (max-width:1080px) and (orientation:portrait){
+  :root{ --strip-h:clamp(240px, min(50vw, 40vh), 460px); }
+  .overlay .proj-media{justify-content:center}
+}
+@media (max-width:760px){
+  :root{ --strip-h:clamp(170px, min(54vw, 30vh), 280px); --strip-gap:8px; }
+}
+.proj-media{
+  margin-top:clamp(16px,2vw,28px);
+  flex:1 1 0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+}
+.marquee{
+  position:relative;
+  width:100%;
+  flex:0 1 auto;
+  height:var(--strip-h);
+  min-height:120px;
+  overflow:hidden;
+  touch-action:pan-y pinch-zoom;
+  background:#000;
+  cursor:grab;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.marquee::-webkit-scrollbar{display:none}
+.marquee:active{cursor:grabbing}
+.marquee-track{
+  display:flex;
+  align-items:stretch;
+  height:100%;
+  width:max-content;
+  will-change:transform;
+}
+.marquee-track img,.marquee-track video{
+  display:block;
+  height:100%;width:auto;
+  flex:0 0 auto;
+  margin-right:10px;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+.marquee-track > *{margin-right:var(--strip-gap) !important}
+.marquee-track .hover-card{
+  position:relative;
+  flex:0 0 auto;
+  height:100%;
+  margin-right:10px;
+  pointer-events:auto;
+  cursor:pointer;
+}
+.marquee-track .hover-card img{
+  margin-right:0;
+  height:100%;
+  width:auto;
+  display:block;
+}
+.marquee-track .hover-card .base{
+  position:relative;
+}
+.marquee-track .hover-card .top{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  transition:opacity .5s var(--ease);
+}
+.marquee-track .hover-card:hover .top{
+  opacity:0;
+}
+.marquee-track .slideshow{
+  position:relative;
+  flex:0 0 auto;
+  height:100%;
+  margin-right:10px;
+  pointer-events:auto;
+  overflow:hidden;
+}
+.marquee-track .slideshow .ss-slide{
+  position:absolute;inset:0;
+  opacity:0;
+  transition:opacity .9s ease;
+}
+.marquee-track .slideshow .ss-slide.is-active{
+  opacity:1;z-index:1;
+}
+.marquee-track .slideshow .ss-slide img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  margin-right:0;
+}
+.marquee-track .slideshow .ss-sizer{
+  position:relative;height:100%;width:auto;display:block;visibility:hidden;
+  margin-right:0;
+}
+.marquee-track .slideshow .ss-dots{
+  position:absolute;right:10px;bottom:8px;z-index:5;
+  display:flex;gap:6px;
+}
+.marquee-track .slideshow .ss-dot{
+  width:6px;height:6px;padding:0;border:0;border-radius:50%;
+  background:rgba(255,255,255,.4);cursor:pointer;
+  transition:background .3s var(--ease);
+}
+.marquee-track .slideshow .ss-dot.is-active{
+  background:#fff;
+}
+.marquee-track .slideshow .ss-label{
+  position:absolute;left:10px;bottom:8px;z-index:5;
+  font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.7);
+  transition:opacity .5s ease;
+}
+.marquee-progress{
+  height:2px;background:var(--line);flex:0 0 auto;
+}
+.marquee-progress-bar{
+  height:100%;width:100%;background:var(--accent);
+  transform-origin:0 50%;transform:scaleX(0);
+}
+.marquee-bar{
+  margin-top:10px;
+  flex:0 0 auto;
+  display:flex;align-items:center;gap:16px;
+  min-height:32px;
+}
+.marquee-toggle{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;font-weight:500;
+  color:var(--dim);
+  transition:color .3s var(--ease);
+}
+.marquee-toggle:hover{color:var(--text)}
+.marquee-toggle svg{width:10px;height:10px;overflow:visible}
+.marquee-toggle svg line{stroke:currentColor;stroke-width:1.4;fill:none}
+.marquee-toggle svg polygon{fill:currentColor}
+.marquee-toggle .ico-play[hidden],.marquee-toggle .ico-pause[hidden]{display:none}
+.detail-counter{
+  font-size:var(--micro);letter-spacing:var(--track);color:var(--dim);
+  font-variant-numeric:tabular-nums;margin-left:auto;
+}
+.detail-pager{display:flex;gap:6px}
+.detail-pager button{
+  width:32px;height:32px;
+  border:1px solid var(--line);
+  display:grid;place-items:center;
+  font-size:14px;color:var(--dim);
+  transition:color .3s var(--ease),border-color .3s var(--ease);
+}
+.detail-pager button:hover{color:var(--text);border-color:var(--text)}
+
+/* ============================================================
+   VAULT
+   ============================================================ */
+.lock{width:8px;height:10px;flex:0 0 auto;overflow:visible}
+.lock rect,.lock path{fill:none;stroke:currentColor;stroke-width:1}
+body.vault-open .lock{display:none}
+.viewlink .lock{margin-right:-2px;display:none}
+.viewlink.is-locked .lock{display:block}
+.index .w .lock{display:inline-block;margin-left:12px;vertical-align:.18em;color:var(--dim)}
+
+.vault{
+  position:relative;
+  height:var(--strip-h);
+  min-height:230px;
+  flex:0 1 auto;
+  background:#000;
+  overflow:hidden;
+  display:flex;
+  align-items:flex-end;
+  padding:clamp(18px,2.4vw,32px);
+}
+.vault[hidden]{display:none}
+/* The project word in the field's own material: dots, not type. */
+.vault-type{
+  position:absolute;inset:0;z-index:0;
+  display:flex;align-items:center;justify-content:flex-end;
+  padding-right:clamp(12px,3vw,48px);
+  pointer-events:none;
+  transition:opacity .7s var(--ease),filter .7s var(--ease),letter-spacing .9s var(--ease);
+}
+.vault-type span{
+  font-size:min(calc(var(--strip-h) * .62), 17vw);
+  font-weight:700;
+  letter-spacing:-.04em;
+  line-height:1;
+  white-space:nowrap;
+  color:transparent;
+  background-image:radial-gradient(rgba(243,243,243,.5) 40%,transparent 44%);
+  background-size:6px 6px;
+  -webkit-background-clip:text;
+  background-clip:text;
+  animation:vaultDrift 9s linear infinite;
+}
+@keyframes vaultDrift{to{background-position:6px 12px}}
+/* Ghost strip: the locked work, just out of focus, drifting past like
+   the real filmstrip does. Filter sits on each frame (rasterised once)
+   and the transform on the track, so the drift costs nothing. */
+.vault-ghost{position:absolute;inset:0;z-index:0;overflow:hidden;opacity:0;transition:opacity .9s var(--ease)}
+.vault.has-ghost .vault-ghost{opacity:.3}   /* faint: the work is there, not on show */
+.vault.has-ghost .vault-type{display:none}
+.vault-ghost-track{
+  display:flex;height:100%;width:max-content;
+  animation:ghostDrift var(--ghost-dur,60s) linear infinite;
+  will-change:transform;
+}
+/* Halftone, in CSS alone. Each frame is greyed and softened, then
+   multiplied by a grid of dots whose falloff is 1/r^2, and the
+   contrast is pushed until only hard-edged dots survive. With a 1/r^2
+   falloff each dot's AREA is proportional to the brightness beneath
+   it, as on a printed screen, so a dark render keeps its overall tone
+   rather than dropping to black: large light dots in the highlights,
+   small ones in the shadows, the same material as the field. Pure CSS, so it works on videos and crossfading slides as
+   they play, and on file:// where canvas pixel reads are blocked. */
+:root{ --ht-dot:6px; --ht-soft:2px; }
+@media (max-width:760px){ :root{ --ht-dot:5px; --ht-soft:1.6px; } }
+.ht{
+  position:relative;
+  height:100%;flex:0 0 auto;
+  /* each frame fades in once its media has loaded. Besides looking
+     better, this makes the browser repaint the halftone at that moment:
+     without it, Chrome can keep showing the empty first paint of a
+     frame that loaded late, so a slow first visit stayed black */
+  opacity:0;
+  transition:opacity .9s var(--ease);
+  margin-right:var(--strip-gap);
+  overflow:hidden;
+  background:#000;
+  isolation:isolate;
+  /* brightness pairs with the dot gradient below: change one and the
+     tonal balance shifts */
+  filter:brightness(8.5) contrast(22) blur(.35px);
+}
+.ht > img,.ht > video,.ht .g-slide{
+  display:block;height:100%;width:auto;
+  filter:grayscale(1) blur(var(--ht-soft));
+}
+.ht.is-ready{opacity:1}
+.ht::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(closest-side,rgb(255,255,255) 0%,rgb(255,255,255) 26.7%,rgb(202,202,202) 30.0%,rgb(148,148,148) 35.0%,rgb(113,113,113) 40.0%,rgb(73,73,73) 50.0%,rgb(50,50,50) 60.0%,rgb(37,37,37) 70.0%,rgb(28,28,28) 80.0%,rgb(22,22,22) 90.0%,rgb(18,18,18) 100.0%,rgb(15,15,15) 110.0%,rgb(13,13,13) 120.0%,rgb(11,11,11) 130.0%,rgb(9,9,9) 142.0%) 0 0 / var(--ht-dot) var(--ht-dot);
+  mix-blend-mode:multiply;
+}
+.g-ss{
+  user-select:none;-webkit-user-drag:none;
+}
+/* slideshow in the ghost strip: slides crossfade over an invisible sizer */
+.g-ss{position:relative}
+.g-ss .g-sizer{display:block;height:100%;width:auto;visibility:hidden}
+.ht .g-slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity 1.2s var(--ease)}
+.ht .g-slide.is-on{opacity:1}
+@keyframes ghostDrift{to{transform:translateX(-50%)}}
+/* opening: the ghost comes forward, then dissolves over the real strip
+   as it wipes in underneath, so the work comes into focus rather than
+   blinking on */
+.vault.is-opening.has-ghost .vault-ghost{opacity:.6}
+.proj-media{position:relative}
+.vault.is-leaving{position:absolute;left:0;right:0;z-index:3;pointer-events:none;
+  transition:opacity 1s var(--ease) .15s}
+.vault.is-leaving.is-gone{opacity:0}
+
+/* reading side of the panel stays dark enough for the form */
+.vault::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.86) 38%,rgba(0,0,0,0) 72%);
+}
+.vault-form{position:relative;z-index:2;max-width:420px;width:100%}
+.vault-kicker{display:flex;align-items:center;gap:9px;margin:0 0 8px;color:var(--accent)}
+.vault-lede{margin:0 0 18px;font-size:13px;line-height:1.6;color:var(--dim);max-width:36ch}
+.vault-row{display:flex;align-items:stretch;gap:10px}
+.vault-row input{
+  flex:1 1 auto;min-width:0;
+  background:transparent;border:0;border-bottom:1px solid var(--line-strong);
+  color:var(--text);font:inherit;font-size:15px;letter-spacing:.12em;
+  padding:10px 0;border-radius:0;
+  transition:border-color .3s var(--ease);
+}
+.vault-row input::placeholder{color:var(--dim);letter-spacing:var(--track);text-transform:uppercase;font-size:var(--micro)}
+.vault-row input:focus-visible{outline:none;border-color:var(--text)}
+.vault-row.is-wrong input{border-color:var(--accent)}
+.vault-row.is-wrong{animation:vaultShake .5s var(--ease)}
+@keyframes vaultShake{
+  0%{transform:translateX(0)}18%{transform:translateX(-9px)}36%{transform:translateX(7px)}
+  54%{transform:translateX(-4px)}72%{transform:translateX(2px)}100%{transform:translateX(0)}
+}
+.vault-row .btn[aria-busy="true"]{opacity:.55;pointer-events:none}
+.vault-msg{min-height:1.6em;margin:10px 0 2px;font-size:12px;color:var(--accent)}
+.vault-ask{margin-top:0}
+
+/* Opening: the dotted word spreads and dissolves, the form lifts away,
+   then the strip wipes in from the left like a shutter opening. */
+.vault.is-opening .vault-type{opacity:0;filter:blur(8px);letter-spacing:.35em}
+.vault.is-opening .vault-form{opacity:0;transform:translateY(-10px);transition:opacity .45s var(--ease),transform .45s var(--ease)}
+.marquee.is-revealing{animation:shutter 1s var(--ease) both}
+@keyframes shutter{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+.proj-media.is-locked .marquee,
+.proj-media.is-locked .marquee-progress{display:none}
+.proj-media.is-locked .marquee-toggle{visibility:hidden}
+
+@media (max-width:760px){
+  .vault{align-items:flex-end;min-height:310px}
+  .vault-type{justify-content:center;padding:0;align-items:flex-start;padding-top:20px}
+  .vault-type span{font-size:min(calc(var(--strip-h) * .42), 16vw)}
+  .vault::before{background:linear-gradient(0deg,#000 0%,rgba(0,0,0,.9) 52%,rgba(0,0,0,0) 78%)}
+  .vault-lede{margin-bottom:12px}
+}
+
+/* Detail content crossfade */
+.detail-body{transition:opacity .3s var(--ease);flex:0 0 auto}
+.detail-body.is-fading{opacity:0}
+
+/* Lightbox */
+.lightbox{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.92);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  cursor:zoom-out;
+  animation:fade .25s var(--ease);
+}
+.lightbox[hidden]{display:none}
+.lightbox img{
+  will-change:transform;
+  max-width:92vw;max-height:92vh;
+  object-fit:contain;
+  border-radius:2px;
+  cursor:default;
+}
+.lightbox-close{
+  position:absolute;top:20px;right:24px;
+  font-size:28px;color:var(--dim);
+  transition:color .3s var(--ease);
+  z-index:1;
+}
+.lightbox-close:hover{color:#fff}
+
+/* ============================================================
+   CURSOR
+   ============================================================ */
+.cursor{
+  position:fixed;top:0;left:0;
+  z-index:var(--z-cursor);
+  pointer-events:none;
+  display:none;
+}
+.cursor i{
+  position:absolute;display:block;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+}
+.cur-dot{width:4px;height:4px;background:var(--text)}
+.cur-ring{
+  width:26px;height:26px;
+  border:1px solid var(--line-strong);
+  transition:width .35s var(--ease),height .35s var(--ease),border-color .35s var(--ease),opacity .35s var(--ease);
+}
+.cursor.on-field .cur-ring{width:15px;height:15px;border-color:var(--accent)}
+.cursor.on-link .cur-ring{width:40px;height:40px;border-color:var(--text)}
+/* Hold to charge: the ring closes on the dot as energy builds, and the
+   release is the shockwave. --charge is written by the app, 0..1. */
+.cursor.is-down .cur-ring{
+  width:calc(54px - 40px * var(--charge,0));
+  height:calc(54px - 40px * var(--charge,0));
+  border-color:var(--accent);
+  opacity:calc(.35 + .65 * var(--charge,0));
+  transition-duration:.12s;
+}
+@media (pointer:fine){
+  body.custom-cursor{cursor:none}
+  body.custom-cursor .cursor{display:block}
+}
+
+/* ============================================================
+   RESPONSIVE
+   Tablet and phone get a vertical composition, not a squeeze.
+   ============================================================ */
+@media (max-width:1080px){
+  .lower{grid-template-columns:minmax(0,1fr);gap:22px}
+  .projmeta{align-items:flex-start;text-align:left;min-width:0}
+  .index button{grid-template-columns:38px minmax(0,1fr) auto}
+  .index .d{display:none}
+}
+@media (max-width:760px){
+  /* mark + wordmark as a lockup on the left, menu on the right. The
+     old 1fr auto auto left the mark orphaned against the menu button. */
+  .header{grid-template-columns:auto minmax(0,1fr) auto;gap:10px;height:calc(56px + var(--safe-t))}
+  .mark{order:-1}
+  .nav{display:none}
+  .menu-btn{
+    display:inline-flex;align-items:center;
+    justify-self:end;
+    min-height:44px;padding:0 2px;
+    font-size:var(--micro);letter-spacing:var(--track);text-transform:uppercase;
+    color:var(--text);
+  }
+  .meta-tr{display:none}
+  .meta-tl{max-width:30ch}
+  .meta-tl .tl-full{display:none}
+  .meta-tl .tl-short{display:block}
+  .ui{grid-template-columns:minmax(0,1fr)}
+
+  /* The headline was capped at 13ch, which on a 390px screen is barely
+     half the measure: a six-line ribbon down the left. It has the
+     column to itself here, so let it use it. */
+  .statement{font-size:clamp(28px,8.6vw,40px);max-width:none;line-height:1.02;margin-bottom:16px}
+  .note{font-size:12px;max-width:40ch;margin-bottom:16px}
+
+  .actions{gap:8px}
+  .btn{padding:14px 17px;min-height:44px}
+
+  /* The field is already shouting the project word at 40% of the
+     screen. Printing it again at 26px directly underneath just reads
+     as a bug. Keep the counter and the description, which are the
+     parts the field cannot say. */
+  .projmeta{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:start;
+    gap:5px 14px;
+    border-top:1px solid var(--line);
+    padding-top:13px;
+    text-align:left;
+    min-width:0;
+  }
+  .projword{display:none}
+  .counter{grid-column:1;grid-row:1}
+  .projdesc{grid-column:1;grid-row:2;max-width:34ch}
+  .viewlink{grid-column:1;grid-row:3;margin-top:2px;min-height:44px;align-items:center}
+  .pager{grid-column:2;grid-row:1 / span 3;display:flex;gap:6px;align-self:center}
+
+  .rail{display:none}
+  .lower{padding-bottom:2px}
+
+  /* More copy sits at the bottom here, so the ramp has to reach higher */
+  .scrim{
+    background:
+      linear-gradient(to top,rgba(8,11,13,.95) 0%,rgba(8,11,13,.74) 26%,rgba(8,11,13,0) 64%),
+      radial-gradient(150% 66% at 50% 38%,rgba(8,11,13,0) 44%,rgba(8,11,13,.5) 100%);
+  }
+
+  /* One line of footer, not two competing ones at 354px of measure */
+  .footer{grid-template-columns:1fr;justify-items:end;height:calc(46px + var(--safe-b))}
+  .footer .c,.footer p:first-child{display:none}
+
+  /* Overlay rows to a real touch height */
+  .index button{padding:15px 4px}
+  .close{min-height:44px;display:inline-flex;align-items:center}
+}
+@media (max-width:420px){
+  .lower{gap:16px}
+  .note{display:none}
+}
+
+/* Short viewports: landscape phones and small handsets. .stage clips its
+   overflow, so anything that does not fit here disappears silently
+   rather than scrolling into view. Shed the optional copy first. */
+@media (max-height:620px) and (max-width:900px){
+  .meta-tl{display:none}
+  .note{display:none}
+  .statement{font-size:clamp(21px,5.2vw,30px);margin-bottom:14px}
+  .projdesc{display:none}
+  .lower{gap:12px}
+}
+@media (max-height:480px){
+  .header{height:calc(52px + var(--safe-t))}
+  .footer{height:calc(44px + var(--safe-b))}
+  .rail{display:none}
+  .viewlink{display:none}
+}
+
+/* ============================================================
+   INTRO
+   One orchestrated moment: the cloth condenses into the first word,
+   then the frame assembles around it. body.intro is set in the markup
+   so nothing flashes before the script runs.
+   ============================================================ */
+body.intro .header > *,body.intro .ui > *,body.intro .footer > *,body.intro .rail{opacity:0}
+body.revealed .header > *,body.revealed .ui > *,body.revealed .footer > *{
+  animation:rise 1.1s var(--ease) both;
+  animation-delay:calc(var(--i,0) * 75ms);
+}
+body.revealed .rail{animation:fade 1.4s var(--ease) .5s both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ============================================================
+   REDUCED MOTION
+   The concept survives. The turbulence does not.
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+  body.custom-cursor{cursor:auto}
+  body.custom-cursor .cursor{display:none}
+  .hintline::after{display:none}
+}
+</style>
+</head>
+<body class="intro">
+
+<!-- ============================================================
+     CUSTOM CURSOR
+     ============================================================ -->
+<div class="cursor" aria-hidden="true">
+  <i class="cur-ring"></i>
+  <i class="cur-dot"></i>
+</div>
+
+<div class="shell">
+
+  <!-- ==========================================================
+       HEADER
+       ========================================================== -->
+  <header class="header">
+    <div class="wordmark">Jonathan Coles</div>
+
+    <!-- Generative indicator: rotates with the field, pulses on state change -->
+    <div class="mark" id="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <line x1="12" y1="2" x2="12" y2="22"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+        <line x1="5" y1="5" x2="19" y2="19"/>
+        <line x1="19" y1="5" x2="5" y2="19"/>
+      </svg>
+    </div>
+
+    <nav class="nav" aria-label="Primary">
+      <button type="button" data-open="work">Work</button>
+      <button type="button" data-open="studio">Studio</button>
+      <button type="button" data-open="contact">Contact</button>
+      <span class="status"><i></i>Available for work</span>
+    </nav>
+
+    <button class="menu-btn" type="button" data-open="menu">Menu</button>
+  </header>
+
+  <!-- ==========================================================
+       STAGE
+       ========================================================== -->
+  <main class="stage" id="stage">
+    <canvas id="field" aria-hidden="true"></canvas>
+    <div class="fallback" id="fallback" aria-hidden="true"><span id="fallbackWord">GRAPHIC</span></div>
+    <div class="scrim" aria-hidden="true"></div>
+
+    <div class="ui">
+      <div class="meta-tl micro">
+        <span class="tl-full">Senior designer<br>
+        Twenty-five years<br>
+        in-house<br>
+        Bristol, England</span>
+        <span class="tl-short">Senior designer<br>
+        Bristol, England</span>
+      </div>
+
+      <div class="meta-tr micro">
+        Selected work<br>
+        Nine sections
+      </div>
+
+      <div class="lower">
+        <div>
+          <h1 class="statement">UI/UX, digital &amp; 3D.</h1>
+          <p class="note" id="note">
+            Twenty-five years in-house: storefronts that load fast, products that reach
+            manufacture, artwork that reaches press. Scroll to pull the next project
+            through the field. Press and hold to charge a shockwave.
+          </p>
+          <div class="actions">
+            <button class="btn" type="button" data-open="work">
+              Explore work
+              <svg viewBox="0 0 14 8" aria-hidden="true"><line x1="0" y1="4" x2="13" y2="4"/><polyline points="9,0 13,4 9,8"/></svg>
+            </button>
+            <button class="btn btn-quiet" type="button" data-open="contact">Get in touch</button>
+          </div>
+        </div>
+
+        <div class="projmeta" id="projmeta">
+          <div class="counter swap"><em id="metaIndex">01</em> / <span id="metaTotal">9</span></div>
+          <div class="projword swap" id="metaWord">GRAPHIC</div>
+          <p class="projdesc swap" id="metaDesc">Brand identity, packaging and press-ready artwork.</p>
+          <button class="viewlink" type="button" id="viewProject">
+            <svg class="lock" viewBox="0 0 8 10" aria-hidden="true"><rect x=".5" y="4.5" width="7" height="5"/><path d="M2 4.5V3a2 2 0 0 1 4 0v1.5"/></svg><span id="viewLabel">View project</span>
+            <svg viewBox="0 0 22 8" aria-hidden="true"><line x1="0" y1="4" x2="21" y2="4"/><polyline points="17,0 21,4 17,8"/></svg>
+          </button>
+
+          <div class="pager">
+            <button class="prev" type="button" id="pagerPrev" aria-label="Previous project">
+              <svg viewBox="0 0 15 9" aria-hidden="true"><line x1="0" y1="4.5" x2="14" y2="4.5"/><polyline points="10,0 14,4.5 10,9"/></svg>
+            </button>
+            <button class="next" type="button" id="pagerNext" aria-label="Next project">
+              <svg viewBox="0 0 15 9" aria-hidden="true"><line x1="0" y1="4.5" x2="14" y2="4.5"/><polyline points="10,0 14,4.5 10,9"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vertical project index. Doubles as a timeline of the nine states. -->
+    <nav class="rail" id="rail" aria-label="Projects"></nav>
+
+    <p class="sr-only" aria-live="polite" id="live"></p>
+  </main>
+
+  <!-- ==========================================================
+       FOOTER
+       ========================================================== -->
+  <footer class="footer">
+    <p class="micro">Portfolio 2026</p>
+    <p class="micro c">Bristol, 51.5° N</p>
+    <p class="micro r"><span id="navHint">Scroll to navigate</span><i class="hintline" aria-hidden="true"></i></p>
+  </footer>
+</div>
+
+<!-- ============================================================
+     OVERLAYS
+     ============================================================ -->
+<section class="overlay" id="ov-menu" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+  <div class="overlay-head">
+    <h2>Menu</h2>
+    <button class="close" type="button" data-close>Close</button>
+  </div>
+  <nav class="menu-list" aria-label="Primary">
+    <button type="button" data-open="work"><span class="l">Work</span><span class="s">Nine selected sections</span></button>
+    <button type="button" data-open="studio"><span class="l">Studio</span><span class="s">Practice, tools, experience</span></button>
+    <button type="button" data-open="contact"><span class="l">Contact</span><span class="s">jcoles78@hotmail.com</span></button>
+  </nav>
+  <p class="menu-status"><i></i>Available for work</p>
+</section>
+
+<section class="overlay" id="ov-work" role="dialog" aria-modal="true" aria-label="Work index" hidden>
+  <div class="overlay-head">
+    <h2>Selected work</h2>
+    <button class="close" type="button" data-close>Close</button>
+  </div>
+  <ul class="index" id="workList"></ul>
+</section>
+
+<section class="overlay" id="ov-studio" role="dialog" aria-modal="true" aria-label="Studio" hidden>
+  <div class="overlay-head">
+    <h2>Studio</h2>
+    <button class="close" type="button" data-close>Close</button>
+  </div>
+  <div class="prose">
+    <p><strong>I am Jonathan Coles, a senior designer in Bristol working across UI/UX, digital and 3D visualisation.</strong> Twenty-five years of that has been in-house rather than at an agency, which means owning the whole chain: the 3D model, the printed prototype, the dieline, the press-ready file, the storefront it sells on, and the film that launches it.</p>
+    <p>Eighteen of those years were with The Somerset Toiletry Co. I led the redesign, build and ongoing maintenance of the e-commerce platform on WordPress and WooCommerce, and took product ranges from a model in Modo to a MakerBot prototype to manufacture. The storefront finished at 100 on desktop and 99 on mobile against Google&rsquo;s Core Web Vitals, and traffic and revenue rose with it.</p>
+    <p>Before that, five years at Codemasters as a 3D artist on Dragon Empires and Maelstrom, building the front-end menu systems for Toca Race Driver 3 and the key art that took thirteen magazine covers in twelve months. I led and mentored a five-person art team. I started at Matinee Sound &amp; Vision, animating the 2001 Williams F1 car launch film.</p>
+    <p>I am open to senior design roles and to studio and freelance projects, remote or on site.</p>
+  </div>
+  <div class="cols">
+    <div>
+      <h3>Practice</h3>
+      <ul>
+        <li>UI/UX design</li>
+        <li>E-commerce build and upkeep</li>
+        <li>3D visualisation</li>
+        <li>Packaging and artworking</li>
+        <li>Exhibition and retail</li>
+        <li>Motion and video</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Tools</h3>
+      <ul>
+        <li>Photoshop, Illustrator, InDesign</li>
+        <li>Modo, 3ds Max, V-Ray</li>
+        <li>WordPress, WooCommerce</li>
+        <li>Premiere, After Effects</li>
+        <li>Adobe XD, MakerBot</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Experience</h3>
+      <ul>
+        <li>The Somerset Toiletry Co.</li>
+        <li>Codemasters</li>
+        <li>Matinee Sound &amp; Vision</li>
+        <li>UWE Bristol, HND Distinction</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="overlay" id="ov-contact" role="dialog" aria-modal="true" aria-label="Contact" hidden>
+  <div class="overlay-head">
+    <h2>Get in touch</h2>
+    <button class="close" type="button" data-close>Close</button>
+  </div>
+  <div class="prose">
+    <p>I am open to senior design roles, and to studio and freelance projects. Tell me what you are building, what it has to do, and when it has to be live.</p>
+    <p><a class="bigmail" href="mailto:jcoles78@hotmail.com">jcoles78@hotmail.com</a></p>
+  </div>
+  <div class="cols">
+    <div>
+      <h3>Studio</h3>
+      <ul><li>Bristol, England</li><li>51.5° N, 2.6° W</li></ul>
+    </div>
+    <div>
+      <h3>Direct</h3>
+      <ul>
+        <li><a href="mailto:jcoles78@hotmail.com">jcoles78@hotmail.com</a></li>
+        <li><a href="tel:+447773857142">07773 857142</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Availability</h3>
+      <ul><li>Senior design roles</li><li>Studio and freelance work</li><li>Remote or on site</li></ul>
+    </div>
+  </div>
+</section>
+
+<section class="overlay" id="ov-project" role="dialog" aria-modal="true" aria-label="Project detail" hidden>
+  <div class="overlay-head">
+    <button class="back" type="button" id="backToWork" aria-label="Back to work index">&larr;</button>
+    <h2 id="dTitle">FORM</h2>
+    <button class="close" type="button" data-close>Close</button>
+  </div>
+  <div class="detail-body" id="detailBody">
+    <div class="prose">
+      <p id="dSummary"></p>
+    </div>
+    <div class="detail-grid">
+      <div><span>Year</span><p id="dYear"></p></div>
+      <div><span>Client</span><p id="dClient"></p></div>
+      <div><span>Role</span><p id="dRole"></p></div>
+      <div><span>Stack</span><p id="dStack"></p></div>
+    </div>
+  </div>
+
+  <div class="proj-media" id="projMedia" hidden>
+    <!-- Locked projects: the strip is replaced by the word in dotted
+         type, the same material as the field, with a passcode entry. -->
+    <div class="vault" id="vault" hidden>
+      <!-- ghost strip: 40px-tall greyscale previews, scaled up and blurred.
+           The real files are never requested until the archive is open. -->
+      <div class="vault-ghost" aria-hidden="true"><div class="vault-ghost-track" id="vaultGhost"></div></div>
+      <div class="vault-type" aria-hidden="true"><span id="vaultWord">GRAPHIC</span></div>
+      <form class="vault-form" id="vaultForm" novalidate>
+        <p class="micro vault-kicker"><svg class="lock" viewBox="0 0 8 10" aria-hidden="true"><rect x=".5" y="4.5" width="7" height="5"/><path d="M2 4.5V3a2 2 0 0 1 4 0v1.5"/></svg>Private archive</p>
+        <p class="vault-lede">Client work, shown on request. Enter the passcode to open all eight projects.</p>
+        <div class="vault-row" id="vaultRow">
+          <label class="sr-only" for="vaultInput">Passcode</label>
+          <input id="vaultInput" type="password" autocomplete="current-password" placeholder="Passcode" spellcheck="false" autocapitalize="off">
+          <button class="btn" type="submit" id="vaultBtn"><span id="vaultBtnLabel">Unlock</span><svg viewBox="0 0 14 8" aria-hidden="true"><line x1="0" y1="4" x2="13" y2="4"/><polyline points="9,0 13,4 9,8"/></svg></button>
+        </div>
+        <p class="vault-msg" id="vaultMsg" aria-live="polite"></p>
+        <a class="viewlink vault-ask" href="mailto:jcoles78@hotmail.com?subject=Portfolio%20passcode">
+          Request a passcode
+          <svg viewBox="0 0 22 8" aria-hidden="true"><line x1="0" y1="4" x2="21" y2="4"/><polyline points="17,0 21,4 17,8"/></svg>
+        </a>
+      </form>
+    </div>
+    <div class="marquee" id="marquee" role="group" aria-label="Screenshot gallery, scrolling automatically">
+      <div class="marquee-track" id="marqueeTrack"></div>
+    </div>
+    <div class="marquee-progress"><div class="marquee-progress-bar" id="marqueeBar"></div></div>
+    <div class="marquee-bar">
+      <button class="marquee-toggle" type="button" id="marqueeToggle" aria-pressed="false">
+        <svg class="ico-pause" viewBox="0 0 10 10" aria-hidden="true"><line x1="2" y1="1" x2="2" y2="9"/><line x1="8" y1="1" x2="8" y2="9"/></svg>
+        <svg class="ico-play" viewBox="0 0 10 10" aria-hidden="true" hidden><polygon points="2,1 9,5 2,9"/></svg>
+        <span id="marqueeToggleLabel">Pause</span>
+      </button>
+      <span class="detail-counter" id="detailCounter"></span>
+      <div class="detail-pager">
+        <button type="button" id="detailPrev" aria-label="Previous project">&larr;</button>
+        <button type="button" id="detailNext" aria-label="Next project">&rarr;</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox-close" type="button" id="lightboxClose" aria-label="Close">&times;</button>
+  <img id="lightboxImg" alt="">
+</div>
+
+<noscript>
+  <div style="position:fixed;inset:0;background:#080B0D;color:#F3F3F3;display:grid;place-items:center;padding:32px;text-align:center;font-family:Inter,sans-serif;z-index:99">
+    <div>
+      <p style="font-size:28px;font-weight:500;letter-spacing:-.03em;max-width:16ch;line-height:1.1">UI/UX, DIGITAL &amp; 3D.</p>
+      <p style="color:#8A8A8A;font-size:13px">This portfolio renders in real time and needs JavaScript. Reach me at jcoles78@hotmail.com.</p>
+    </div>
+  </div>
+</noscript>
+
+<script>
+"use strict";
+/* ================================================================
+   JONATHAN COLES. PORTFOLIO 2026
+   ----------------------------------------------------------------
+   Preserved from the previous build:
+     - the lattice + text mask idea (a regular field of elements,
+       masked by canvas-rendered type, revealed on a diagonal sweep)
+     - the cursor Gaussian falloff and the expanding-ring shockwave
+       math, retuned for world units
+     - one directional light, no images
+     - all content, navigation and copy
+   Replaced:
+     - 2,048 lit boxes  ->  ~44k GPU points on a deforming surface
+     - three.js         ->  direct WebGL, so the page ships one file
+   Modules below map one to one onto components:
+     GenerativeField / TransitionSystem / ProjectRail / ProjectMeta /
+     CustomCursor / OverlayManager / App
+   ================================================================ */
+
+/* ---------------------------------------------------------------
+   PROJECT DATA
+   Each project is a state of the same material, not a page.
+   --------------------------------------------------------------- */
+const PROJECTS = [
+  { word:"GRAPHIC" , desc:"Brand identity, packaging and press-ready artwork."     , discipline:"Graphic design"        , year:"2001—24"   , client:"Various"                   , role:"Senior designer"         , stack:"Illustrator, InDesign, Photoshop",
+    summary:"Brand identity, packaging design and press-ready artwork across twenty-five years of in-house production. Every piece ships: dielines that fold, colour that holds on press, and files that pass preflight first time. The work spans toiletry packaging, point-of-sale material, catalogues, stationery systems and trade-show collateral.",
+    locked:true },
+  { word:"ARTWORK" , desc:"Creative illustration, retouching and visual concepts." , discipline:"Creative artwork"      , year:"2001—24"   , client:"Various"                   , role:"Designer and artworker"  , stack:"Photoshop, Illustrator",
+    summary:"Creative artwork encompassing illustration, photo retouching, compositing and visual concept development. From key art that took thirteen magazine covers in twelve months to marketing visuals rendered ahead of manufacture so sales could present ranges to buyers before tooling was signed off.",
+    locked:true },
+  { word:"PRODUCT" , desc:"From screen model to MakerBot prototype to manufacture.", discipline:"Product design, 3D"    , year:"2006—24"   , client:"The Somerset Toiletry Co." , role:"Designer and artworker"  , stack:"Modo, MakerBot, V-Ray",
+    summary:"Product ranges taken from a first model in Modo to a MakerBot prototype in hand, then through to manufacture. A physical prototype settles arguments a rendered view cannot, and it catches the moulding and assembly problems early, while they are still cheap to fix. The same models were rendered as marketing visuals ahead of manufacture, so sales could put a range in front of buyers before tooling was signed off.",
+    locked:true },
+  { word:"EXHIBIT" , desc:"Exhibition stands, retail displays and environments."   , discipline:"Exhibition design"     , year:"2006—24"   , client:"The Somerset Toiletry Co." , role:"Senior designer"         , stack:"Modo, Illustrator, V-Ray",
+    summary:"Trade-show exhibition stands, retail point-of-sale displays and branded environments designed from concept through to build. Every stand has to attract from thirty metres, explain at three, and survive four days of foot traffic. The work covers floor plans, 3D visualisations for client sign-off, large-format graphics and coordination with fabricators.",
+    locked:true },
+  { word:"WEB"     , desc:"E-commerce UI/UX scoring 100 desktop, 99 mobile."      , discipline:"Web design, UI/UX"     , year:"2006—24"   , client:"The Somerset Toiletry Co." , role:"Designer and developer"  , stack:"WordPress, WooCommerce, CSS",
+    summary:"I led the redesign, build and ongoing maintenance of the company storefront. Responsive UI/UX, page performance and SEO were treated as one job rather than three, because a product page that looks right and loads slowly still loses the sale. The site finished at 100 on desktop and 99 on mobile against Google Core Web Vitals, and traffic and revenue rose with it.",
+    locked:true },
+  { word:"SHORTS"  , desc:"Social-first video content for product launches."      , discipline:"Social shorts"         , year:"2018—24"   , client:"The Somerset Toiletry Co." , role:"Designer and editor"     , stack:"Premiere, After Effects",
+    summary:"Short-form video content designed for social platforms — product reveals, seasonal campaigns and launch teasers cut to the rhythms of Instagram, TikTok and Facebook. Every piece is built mobile-first, grabs in the first second, and works with sound off. Shoot planning, motion graphics, colour grading and delivery across aspect ratios and platform specs.",
+    locked:true },
+  { word:"RENDER"  , desc:"Photorealistic 3D product and environment visualisation.", discipline:"3D visualisation"     , year:"2001—24"   , client:"Various"                   , role:"3D artist"               , stack:"Modo, 3ds Max, V-Ray",
+    summary:"Photorealistic 3D visualisation for product, packaging and environment work. Models built to manufacture tolerances, lit and rendered to a standard that replaces photography for catalogue and e-commerce use. The pipeline runs from CAD or concept sketch through to final composite, covering materials, lighting, camera and post.",
+    locked:true },
+  { word:"MATHS"   , desc:"Times tables app for KS1 and KS2, live on Google Play.", discipline:"App design"            , year:"2024—25"   , client:"Maths Jumper"              , role:"Designer and developer"  , stack:"Google Play",
+    summary:"Maths Jumper is a times tables app for KS1 and KS2 children, approved and published on Google Play. Scope, role and outcome to be written.",
+    media:[
+      { type:"image", src:"assets/maths-jumper-mastered.webp",  alt:"Store listing graphic: times tables mastered, stress-free, no ads, one-time purchase, works offline." },
+      { type:"image", src:"assets/maths-jumper-banner.webp",    alt:"Maths Jumper Times Tables key art, with the full cast of characters." },
+      { type:"image", src:"assets/maths-jumper-calm-mode.webp", alt:"Store listing graphic: calm mode, no stress, quieter sounds, no vibration, untimed early stages." },
+      { type:"image", src:"assets/maths-jumper-01.webp",        alt:"Maths Jumper home screen, with stars earned, facts mastered and a daily streak." }
+    ] },
+  { word:"BCHIP"   , desc:"Branding, print and environmental design for BillyChip.", discipline:"Brand, print, retail"  , year:"2023—24", client:"BillyChip"                 , role:"Designer and artworker"  , stack:"Illustrator, Photoshop",
+    summary:"Branding, print collateral and environmental design for BillyChip. The work covers identity, point-of-sale materials, exhibition stands, tent cards, coffee cups and promotional artwork across digital and physical touchpoints.",
+    locked:true },
+];
+
+/* ---------------------------------------------------------------
+   VAULT
+   The media for every project marked locked:true lives here, AES-GCM
+   encrypted with a key derived from the passcode (PBKDF2, SHA-256).
+   Without the passcode the page source does not say which images
+   exist. PREVIEWS, the line after it, lists one image per item so the
+   locked panel can show the work in black and white, slightly blurred.
+   To change the passcode or the locked media, regenerate both lines
+   with vault-tool.html and paste them over the two below.
+   --------------------------------------------------------------- */
+const VAULT = {"v":1,"iter":310000,"salt":"mvEAC3xmXTnSLnLypMyWCQ==","iv":"d8hmkdhOQGkJCuZ+","data":"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"};
+const PREVIEWS = {"GRAPHIC":[{"type":"image","src":"img/stc-brochure-2023.webp"},{"type":"image","src":"img/brochure-aaa.webp"},{"type":"image","src":"img/brochure-aaa-hand-cream.webp"},{"type":"image","src":"img/brochure-xmas.webp"},{"type":"image","src":"img/brochure-festive.webp"},{"type":"image","src":"img/design-lifestyle.webp"},{"type":"image","src":"img/design-lifestyle-bts.webp"},{"type":"image","src":"img/brochure-brochure.webp"},{"type":"slideshow","interval":4000,"slides":["img/stc-logo-25-mock1.webp","img/stc-logo-25-mock2.webp","img/brochure-logo.webp"]},{"type":"image","src":"img/stc-flyers-soap-bar.webp"},{"type":"image","src":"img/sbc-poster-0.webp"},{"type":"image","src":"img/sbc-card1.webp"}],"ARTWORK":[{"type":"image","src":"img/artwork-banner.webp"},{"type":"image","src":"img/oliver-bonas-box-mock-up.webp"},{"type":"image","src":"img/oliver-bonas-bath-oil-mock-up.webp"},{"type":"image","src":"img/oliver-bonas-box.webp"},{"type":"image","src":"img/oliver-bonas-products.webp"},{"type":"video","src":"videos/ob-artwork-breakdown.webm"},{"type":"image","src":"img/artwork-threelions.webp"},{"type":"image","src":"img/artwork-threelions-box.webp"},{"type":"image","src":"img/urban-cafe1.webp"},{"type":"image","src":"img/web-inserts.webp"},{"type":"image","src":"img/artwork-billychip-cup.webp"},{"type":"image","src":"img/artwork-billychip-art.webp"},{"type":"image","src":"img/STC - VAN - MOS.webp"},{"type":"image","src":"img/STC - VAN STC.webp"},{"type":"image","src":"img/artwork-theflag.webp"},{"type":"image","src":"img/artwork-shop.webp"}],"PRODUCT":[{"type":"image","src":"img/3d-product-design.webp"},{"type":"image","src":"img/product-dog.webp"},{"type":"image","src":"img/product-owl.webp"},{"type":"image","src":"img/product-pig.webp"},{"type":"image","src":"img/product-cat.webp"},{"type":"video","src":"videos/cac.webm"},{"type":"image","src":"img/3d-cac.webp"}],"EXHIBIT":[{"type":"image","src":"img/mos-exhibition.webp"},{"type":"image","src":"img/mos-act1.webp"},{"type":"image","src":"img/mos-act.webp"},{"type":"image","src":"img/mos-exhibition-drawing.webp"},{"type":"image","src":"img/stc-exhibition.webp"},{"type":"image","src":"img/stc-exhibition1.webp"},{"type":"video","src":"videos/the-somerset-toiletry-co-spring-fair-2022-show-lowres.webm"},{"type":"image","src":"img/stc-exhibition-drawing.webp"},{"type":"image","src":"img/stc-exhibition-orig-stand.webp"},{"type":"image","src":"img/stc-exhibition-orig.webp"},{"type":"image","src":"img/mos-act-display.webp"},{"type":"image","src":"img/stc-act-25.webp"}],"WEB":[{"type":"image","src":"img/webui-banner.webp"},{"type":"image","src":"img/webui-landing.webp"},{"type":"image","src":"img/webui-product.webp"},{"type":"image","src":"img/webui-mobile-left.webp"},{"type":"image","src":"img/webui-mobile-right.webp"},{"type":"image","src":"img/Sale Email Banner.webp"},{"type":"image","src":"img/Sale Email Banner - Truck.webp"},{"type":"video","src":"videos/bubble-home.webm"},{"type":"image","src":"img/webui-bubble-banners.webp"},{"type":"image","src":"img/webui-bubble-sections.webp"}],"SHORTS":[{"type":"image","src":"img/social-shorts-banner.webp"},{"type":"video","src":"videos/Ministry od Soap - Soap Production.webm"},{"type":"image","src":"img/social-shorts-bts.webp"},{"type":"image","src":"img/social-shorts-bts-2.webp"},{"type":"video","src":"videos/Xmas Tree.webm"},{"type":"video","src":"videos/Mr Perfect & Friends.webm"},{"type":"video","src":"videos/AAA Soap Bars.webm"},{"type":"video","src":"videos/About Us.webm"},{"type":"video","src":"videos/Brochure.webm"}],"RENDER":[{"type":"image","src":"img/3d-bob-banner.webp"},{"type":"video","src":"videos/bob-wireframe-soap.webm"},{"type":"image","src":"img/3d-bob-soap.webp"},{"type":"video","src":"videos/bob-wireframe-bathroom.webm"},{"type":"image","src":"img/3d-bob-bathroom.webp"},{"type":"image","src":"img/3d-repair-banner.webp"},{"type":"image","src":"img/3d-aaa.webp"},{"type":"image","src":"img/3d-delray.webp"},{"type":"video","src":"videos/stc-festive.webm"},{"type":"image","src":"img/3d-festive-group-grey.webp"},{"type":"image","src":"img/3d-racedriver.webp"},{"type":"image","src":"img/3d-maelstrom.webp"},{"type":"image","src":"img/3d-mam.webp"},{"type":"image","src":"img/3d-dragon.webp"}],"BCHIP":[{"type":"image","src":"img/bchip-top-banner.webp"},{"type":"image","src":"img/the-hub.webp"},{"type":"image","src":"img/billychip.webp"},{"type":"image","src":"img/bchip-tent-top-banner.webp"},{"type":"image","src":"img/bchipbathlife.webp"},{"type":"image","src":"img/bchipstand.webp"},{"type":"image","src":"img/billchip-coffee-cup.webp"}]};
+
+const Vault = {
+  open: false,
+  _b64: s => Uint8Array.from(atob(s), c => c.charCodeAt(0)),
+  _merge(json){
+    const media = JSON.parse(json);
+    PROJECTS.forEach(p=>{ if(p.locked && media[p.word]) p.media = media[p.word]; });
+    this.open = true;
+    document.body.classList.add("vault-open");
+  },
+  async _decrypt(key){
+    const iv = this._b64(VAULT.iv), data = this._b64(VAULT.data);
+    const plain = await crypto.subtle.decrypt({ name:"AES-GCM", iv }, key, data);
+    return new TextDecoder().decode(plain);
+  },
+  /* resolves true on the right passcode; AES-GCM refuses anything else */
+  async unlock(pass){
+    if(this.open) return true;
+    if(!window.crypto || !crypto.subtle) throw new Error("no-crypto");
+    const enc = new TextEncoder();
+    const base = await crypto.subtle.importKey("raw", enc.encode(pass), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey(
+      { name:"PBKDF2", salt:this._b64(VAULT.salt), iterations:VAULT.iter, hash:"SHA-256" },
+      base, { name:"AES-GCM", length:256 }, true, ["decrypt"]);
+    let json;
+    try { json = await this._decrypt(key); } catch(e){ return false; }
+    this._merge(json);
+    // remember for this browser session only, as the derived key, never the passcode
+    try {
+      const raw = new Uint8Array(await crypto.subtle.exportKey("raw", key));
+      sessionStorage.setItem("jc-vault", btoa(String.fromCharCode(...raw)));
+    } catch(e){}
+    return true;
+  },
+  async restore(){
+    try {
+      const saved = sessionStorage.getItem("jc-vault");
+      if(!saved || !window.crypto || !crypto.subtle) return false;
+      const key = await crypto.subtle.importKey("raw", this._b64(saved), "AES-GCM", false, ["decrypt"]);
+      this._merge(await this._decrypt(key));
+      return true;
+    } catch(e){
+      try { sessionStorage.removeItem("jc-vault"); } catch(_){}
+      return false;
+    }
+  }
+};
+
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const COARSE  = window.matchMedia("(pointer: coarse)").matches;
+const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+const lerp  = (a,b,t)=>a+(b-a)*t;
+const easeInOut = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+
+/* ===============================================================
+   MAT4. The four matrix operations this page actually needs
+   =============================================================== */
+const M4 = {
+  perspective(fovy,aspect,near,far){
+    const f = 1/Math.tan(fovy/2), nf = 1/(near-far);
+    return new Float32Array([
+      f/aspect,0,0,0,
+      0,f,0,0,
+      0,0,(far+near)*nf,-1,
+      0,0,2*far*near*nf,0
+    ]);
+  },
+  lookAt(eye,center,up,out){
+    let z0=eye[0]-center[0],z1=eye[1]-center[1],z2=eye[2]-center[2];
+    let l=1/Math.hypot(z0,z1,z2); z0*=l; z1*=l; z2*=l;
+    let x0=up[1]*z2-up[2]*z1, x1=up[2]*z0-up[0]*z2, x2=up[0]*z1-up[1]*z0;
+    l=Math.hypot(x0,x1,x2); if(l){l=1/l;x0*=l;x1*=l;x2*=l;}
+    const y0=z1*x2-z2*x1, y1=z2*x0-z0*x2, y2=z0*x1-z1*x0;
+    const o = out || new Float32Array(16);
+    o[0]=x0;o[1]=y0;o[2]=z0;o[3]=0;
+    o[4]=x1;o[5]=y1;o[6]=z1;o[7]=0;
+    o[8]=x2;o[9]=y2;o[10]=z2;o[11]=0;
+    o[12]=-(x0*eye[0]+x1*eye[1]+x2*eye[2]);
+    o[13]=-(y0*eye[0]+y1*eye[1]+y2*eye[2]);
+    o[14]=-(z0*eye[0]+z1*eye[1]+z2*eye[2]);
+    o[15]=1;
+    return o;
+  },
+  mul(a,b,out){
+    const o = out || new Float32Array(16);
+    for(let i=0;i<4;i++){
+      for(let j=0;j<4;j++){
+        o[i*4+j] = a[j]*b[i*4] + a[4+j]*b[i*4+1] + a[8+j]*b[i*4+2] + a[12+j]*b[i*4+3];
+      }
+    }
+    return o;
+  }
+};
+
+/* ===============================================================
+   SHADERS
+   The surface, the light and the forces all live here. Nothing
+   per-particle is computed on the CPU, so 44k points cost one
+   draw call and no garbage.
+   =============================================================== */
+const VERT = `
+precision highp float;
+
+attribute vec2  aBase;   // world position on the lattice
+attribute vec2  aCell;   // normalised cell, drives the reveal sweep
+attribute vec2  aRand;   // per-point randomness
+attribute float aCovA;   // glyph coverage, outgoing word
+attribute float aCovB;   // glyph coverage, incoming word
+
+uniform mat4  uVP;
+uniform float uTime;
+uniform float uMorph;    // 0..1 across a state change
+uniform float uBurst;    // sin(pi * morph), the dissolve peak
+uniform float uAmp;      // surface relief
+uniform float uSize;
+uniform float uStill;    // 1.0 when reduced motion is on
+uniform float uDir;      // +1 forward, -1 back: which way the sweep runs
+uniform vec2  uBurstAt;  // where the change came from, in world units
+uniform vec3  uMouse;    // xy world, z strength
+uniform vec2  uMouseVel;
+uniform vec4  uWaves[6]; // xy origin, z age, w strength
+
+varying float vAlpha;
+varying vec3  vColor;
+
+/* Simplex noise, Ashima Arts / Stefan Gustavson (MIT). */
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0);
+  const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy));
+  vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz);
+  vec3 l=1.0-g;
+  vec3 i1=min(g.xyz,l.zxy);
+  vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx;
+  vec3 x2=x0-i2+C.yyy;
+  vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(
+      i.z+vec4(0.0,i1.z,i2.z,1.0))
+    + i.y+vec4(0.0,i1.y,i2.y,1.0))
+    + i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857;
+  vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z);
+  vec4 x_=floor(j*ns.z);
+  vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy;
+  vec4 y=y_*ns.x+ns.yyyy;
+  vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy);
+  vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0;
+  vec4 s1=floor(b1)*2.0+1.0;
+  vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+  vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x);
+  vec3 p1=vec3(a0.zw,h.y);
+  vec3 p2=vec3(a1.xy,h.z);
+  vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);
+  m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}
+
+/* The material. A fabric with three scales of fold. */
+float surface(vec2 p,float t,float cov){
+  float n  = snoise(vec3(p*0.26, t*0.075)) * 1.00;
+  n += snoise(vec3(p*0.61 + 17.0, t*0.130)) * 0.42;
+  n += snoise(vec3(p*1.37 + 41.0, t*0.210)) * 0.16;
+  return n * (0.34 + cov * 0.95);
+}
+
+void main(){
+  /* --- state change: a diagonal sweep, inherited from the old wall --- */
+  /* runs the way the user moved; delay + window tops out at exactly 1.0
+     so every point has fully arrived when the morph does */
+  float sx = uDir > 0.0 ? aCell.x : 1.0 - aCell.x;
+  float delay = sx * 0.40 + aCell.y * 0.16;
+  float m = smoothstep(delay, delay + 0.44, uMorph);
+  float cov = mix(aCovA, aCovB, m);
+
+  float t = uTime;
+  vec2  p = aBase;
+  float core = smoothstep(0.44, 0.63, cov);
+
+  /* --- surface and its analytic normal (one directional light) --- */
+  float e  = 0.16;
+  float h  = surface(p, t, cov);
+  float hx = surface(p + vec2(e,0.0), t, cov);
+  float hy = surface(p + vec2(0.0,e), t, cov);
+  vec2  grad = vec2(hx - h, hy - h) / e * uAmp;
+  vec3  N  = normalize(vec3(-grad, 1.0));
+  vec3  L  = normalize(vec3(-0.42, 0.72, 0.58));
+  float lam = max(dot(N,L), 0.0);
+
+  vec3 pos = vec3(p, h * uAmp);
+
+  /* The lattice slides down the slope, so points bunch on the folds and
+     thin out on the flats. That density banding is what makes the field
+     read as cloth rather than as a halftone. Damped inside the glyph:
+     the form holds while everything around it gives way. */
+  pos.xy -= grad * 0.062 * (1.0 - 0.62 * core);
+
+  /* dust away from the glyph drifts more, so edges dissolve */
+  float loose = (1.0 - smoothstep(0.10, 0.62, cov));
+  pos.xy += vec2(
+    snoise(vec3(p*0.42 + 5.0, t*0.14)),
+    snoise(vec3(p*0.42 + 91.0, t*0.14))
+  ) * loose * 0.30 * uStill;
+
+  /* --- cursor: a soft repulsion plus a wake in the direction of travel --- */
+  float energy = 0.0;
+  vec2  md = p - uMouse.xy;
+  float mf = exp(-dot(md,md) * 0.085) * uMouse.z;
+  pos.xy += normalize(md + vec2(0.0001)) * mf * 0.60;
+  pos.xy += uMouseVel * mf * 1.15;
+  pos.z  += mf * 1.55;
+  energy += abs(mf) * 0.55;   // negative strength = attraction while charging
+
+  /* --- shockwaves: expanding ring, same falloff as the old wall --- */
+  for(int i=0;i<6;i++){
+    vec4 w = uWaves[i];
+    float live = step(0.001, w.w);
+    float d = distance(p, w.xy);
+    float band = d - w.z * 9.2;
+    float amp = exp(-band*band*0.42) * exp(-w.z*0.80) * w.w * live;
+    pos.z  += amp * 2.30;
+    pos.xy += normalize(p - w.xy + vec2(0.0001)) * amp * 0.85;
+    energy += amp;
+  }
+
+  /* --- transition burst: the material comes apart, then re-forms --- */
+  if(uBurst > 0.001){
+    vec3 tn = vec3(
+      snoise(vec3(p*0.55 + 3.0,  t*0.6)),
+      snoise(vec3(p*0.55 + 63.0, t*0.6)),
+      snoise(vec3(p*0.55 + 123.0,t*0.6))
+    );
+    vec2 bo = p - uBurstAt;
+    float nearB = 0.6 + 0.7 * exp(-dot(bo,bo) * 0.03);
+    pos += tn * uBurst * 0.78 * nearB;
+  }
+
+  vec4 clip = uVP * vec4(pos, 1.0);
+  gl_Position = clip;
+
+  /* --- density: core glyph, halo, and the field itself --- */
+  float halo = smoothstep(0.02, 0.46, cov) * 0.42;
+  float shade = 0.20 + lam * 1.30;
+
+  float a = (0.055 + halo + core * 1.22) * shade;
+  a *= 1.0 - uBurst * 0.34;
+  a += energy * 0.18 * (0.25 + core);
+  a *= clamp(1.0 - (clip.w - 26.0) * 0.012, 0.25, 1.0);
+
+  gl_PointSize = uSize * (0.78 + core * 0.66 + energy * 0.30) * (26.0 / max(clip.w, 1.0));
+
+  /* accent as a signal, never as a brand colour: a few points in the
+     glyph core that catch the light when force passes through them */
+  float isAccent = step(0.986, aRand.x) * core;
+  vec3 col = mix(vec3(0.953,0.953,0.953), vec3(1.0,0.353,0.212), isAccent * clamp(0.30 + energy*1.6, 0.0, 1.0));
+
+  vColor = col;
+  vAlpha = clamp(a, 0.0, 1.4);
+}
+`;
+
+const FRAG = `
+precision mediump float;
+varying float vAlpha;
+varying vec3  vColor;
+void main(){
+  vec2 d = gl_PointCoord - 0.5;
+  float r2 = dot(d,d);
+  if(r2 > 0.25) discard;
+  float f = smoothstep(0.25, 0.03, r2);
+  gl_FragColor = vec4(vColor * vAlpha * f, 1.0);
+}
+`;
+
+/* ===============================================================
+   SPRING
+   A damped spring with fixed substeps, so it behaves the same at 60,
+   120 or 144Hz. zeta below 1 overshoots a touch: that is the mass the
+   old lerps never had.
+   =============================================================== */
+class Spring {
+  constructor(v, k, zeta){
+    this.v = v; this.t = v; this.vel = 0;
+    this.k = k; this.c = 2 * Math.sqrt(k) * zeta;
+  }
+  step(dt){
+    const n = Math.max(1, Math.ceil(dt / 0.006)), h = dt / n;
+    for(let i=0;i<n;i++){
+      const a = this.k * (this.t - this.v) - this.c * this.vel;
+      this.vel += a * h;
+      this.v += this.vel * h;
+    }
+    return this.v;
+  }
+  snap(v){ this.v = this.t = v; this.vel = 0; }
+}
+
+/* ===============================================================
+   GENERATIVE FIELD
+   Owns the GL context, the lattice, the masks and the loop.
+   =============================================================== */
+class GenerativeField {
+  constructor(canvas){
+    this.canvas = canvas;
+    this.ok = false;
+    this.time = 0;
+    this.raf = 0;
+    this.waves = [];           // {x,y,t0,strength}
+    this.mouse = { x:0, y:0, tx:0, ty:0, s:0, ts:0, vx:0, vy:0, boost:0, inside:false };
+    this.morph = 1;             // eased, what the shader sees
+    this.mt = 1;                // linear progress 0..1
+    this.mode = "auto";         // auto | scrub | revert
+    this.scrubT = 0;
+    this.dir = 1;
+    this.burstAt = [0,0];
+    this.morphDur = REDUCED ? 0.28 : 1.35;
+    this._dur = this.morphDur;
+    this._toTag = 0; this._fromTag = 0; this._fromWord = "";
+    this.onMid = null;          // (tag) when the field crosses from one word to the other
+    this.onRevert = null;       // (tag) when a scrub is released short and falls back
+    this.onFrame = null;        // (burst, dt)
+    // springs: camera rotation and dolly overshoot, parallax is softer
+    this.sp = {
+      yaw:   new Spring(0, 38, 0.55),
+      pitch: new Spring(0, 38, 0.55),
+      dolly: new Spring(1, 30, 0.62),
+      px:    new Spring(0, 24, 0.72),
+      py:    new Spring(0, 24, 0.72)
+    };
+    this.focus = false;         // true while a project is open: the camera dives in
+    this.lowPower = false;      // true under an opaque overlay: draw at half rate
+    this._flip = false;
+    this.charge = 0; this.chargeT = 0;
+    this.lastInput = 0;
+    this.quality = 2;           // stepped down if frames run long
+    this._ft = []; this._age = 0;
+    this._eye = [0,0,0]; this._view = new Float32Array(16); this._vp = new Float32Array(16);
+    this.cam = { yaw:0, pitch:0, dolly:1, tyaw:0, tpitch:0, tdolly:1, px:0, py:0, tpx:0, tpy:0 };
+    this.word = PROJECTS[0].word;
+    this.fieldH = 10;
+    this.disposed = false;
+  }
+
+  mount(){
+    const opts = { alpha:false, antialias:false, depth:false, powerPreference:"high-performance", failIfMajorPerformanceCaveat:false };
+    const gl = this.canvas.getContext("webgl", opts) || this.canvas.getContext("experimental-webgl", opts);
+    if(!gl) return false;
+    this.gl = gl;
+
+    const prog = this._program(VERT, FRAG);
+    if(!prog) return false;
+    this.prog = prog;
+    gl.useProgram(prog);
+
+    this.attr = {
+      base: gl.getAttribLocation(prog,"aBase"),
+      cell: gl.getAttribLocation(prog,"aCell"),
+      rand: gl.getAttribLocation(prog,"aRand"),
+      covA: gl.getAttribLocation(prog,"aCovA"),
+      covB: gl.getAttribLocation(prog,"aCovB")
+    };
+    this.uni = {};
+    ["uVP","uTime","uMorph","uBurst","uAmp","uSize","uStill","uMouse","uMouseVel","uDir","uBurstAt"].forEach(n=>{
+      this.uni[n] = gl.getUniformLocation(prog,n);
+    });
+    this.uni.uWaves = gl.getUniformLocation(prog,"uWaves[0]");
+
+    this.buf = {
+      base: gl.createBuffer(),
+      cell: gl.createBuffer(),
+      rand: gl.createBuffer(),
+      covA: gl.createBuffer(),
+      covB: gl.createBuffer()
+    };
+    this._activeCov = "covA";   // buffer holding the current word
+    // A restored context has fresh, empty buffers, so the next resize()
+    // must do the full rebuild rather than short-circuit on cached sizes.
+    // Mobile browsers drop the context on backgrounding routinely.
+    this._cw = this._ch = 0;
+    this.cols = this.rows = 0;
+
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE);           // additive, on a near-black ground
+    gl.clearColor(0.031, 0.043, 0.051, 1);
+
+    this._waveData = new Float32Array(24);
+
+    if(!this._onLost){
+      this.canvas.addEventListener("webglcontextlost", this._onLost = e=>{ e.preventDefault(); this._running = false; cancelAnimationFrame(this.raf); }, false);
+      this.canvas.addEventListener("webglcontextrestored", this._onRestored = ()=>{ this.mount(); this.resize(); this.start(); }, false);
+    }
+
+    this.ok = true;
+    return true;
+  }
+
+  _program(vs,fs){
+    const gl = this.gl;
+    const compile = (type,src)=>{
+      const s = gl.createShader(type);
+      gl.shaderSource(s,src); gl.compileShader(s);
+      if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
+        console.warn("[field] shader:", gl.getShaderInfoLog(s));
+        gl.deleteShader(s); return null;
+      }
+      return s;
+    };
+    const v = compile(gl.VERTEX_SHADER,vs), f = compile(gl.FRAGMENT_SHADER,fs);
+    if(!v || !f) return null;
+    const p = gl.createProgram();
+    gl.attachShader(p,v); gl.attachShader(p,f); gl.linkProgram(p);
+    gl.deleteShader(v); gl.deleteShader(f);
+    if(!gl.getProgramParameter(p,gl.LINK_STATUS)){
+      console.warn("[field] link:", gl.getProgramInfoLog(p));
+      return null;
+    }
+    return p;
+  }
+
+  /* --- lattice ------------------------------------------------ */
+  resize(force){
+    if(!this.ok) return;
+    const gl = this.gl, host = this.canvas.parentElement;
+    // Never floor above the real box. The canvas is stretched to 100% of
+    // .stage by CSS, so a 320x240 minimum squashed the field on any phone
+    // narrower or shorter than that.
+    const w = Math.max(1, host.clientWidth);
+    const h = Math.max(1, host.clientHeight);
+    const narrow = w < 760;
+    // Additive point sprites are fill-rate bound. Rendering at dpr 3 on a
+    // phone costs ~4x the shading of dpr 1.5 for no visible gain.
+    // quality steps down (never up) if the frame budget is blown
+    const Q = [ {stride:1.4, dpr:0.72}, {stride:1.18, dpr:0.86}, {stride:1, dpr:1} ][this.quality];
+    const dev = window.devicePixelRatio || 1;
+    const dpr = Math.max(Math.min(1, dev), Math.min(dev, narrow ? 1.5 : 2) * Q.dpr);
+
+    const cw = Math.round(w * dpr), ch = Math.round(h * dpr);
+    // iOS fires resize on every address-bar nudge; a rebuild each time
+    // means a synchronous blur on the main thread mid-scroll.
+    if(!force && cw === this._cw && ch === this._ch) return;
+    this._cw = cw; this._ch = ch;
+
+    this.canvas.width  = cw;
+    this.canvas.height = ch;
+    gl.viewport(0,0,cw,ch);
+
+    this.aspect = w / h;
+    this.dpr = dpr;
+    this.portrait = this.aspect < 1;
+
+    // Density follows the viewport, but the floor matters more than the
+    // stride on a phone: at 96 columns a six-letter word gets ~2 points
+    // per stem, which is why the type read as mush in portrait. The dpr
+    // cap above pays for the extra points.
+    const stride = (narrow ? 7.2 : (w < 1200 ? 5.8 : 5.0)) * Q.stride;
+    const cols = clamp(Math.round(w / stride), Math.round((narrow ? 132 : 96) / Q.stride), 300);
+    const rows = clamp(Math.round(cols * (h / w)), 60, 260);
+
+    if(cols !== this.cols || rows !== this.rows){
+      this.cols = cols; this.rows = rows;
+      this._buildLattice();
+    }
+    this._sizeFactor = narrow ? 1.22 : 1.0;
+
+    // fit the field to the viewport
+    this.fieldH = 10;
+    this.fieldW = this.fieldH * this.aspect;
+    const fov = 26 * Math.PI/180;
+    this.dist = Math.max(
+      (this.fieldH/2) / Math.tan(fov/2),
+      (this.fieldW/2) / Math.tan(fov/2) / this.aspect
+    ) * 1.02;
+    this.proj = M4.perspective(fov, this.aspect, 1, 400);
+
+    this._uploadWorld();
+    this.setWord(this.word, true);
+  }
+
+  _buildLattice(){
+    const gl = this.gl, cols = this.cols, rows = this.rows;
+    const n = cols * rows;
+    this.count = n;
+
+    const base = new Float32Array(n*2);
+    const cell = new Float32Array(n*2);
+    const rand = new Float32Array(n*2);
+
+    for(let iy=0; iy<rows; iy++){
+      for(let ix=0; ix<cols; ix++){
+        const i = iy*cols + ix;
+        const u = ix/(cols-1), v = iy/(rows-1);
+        // world coords are assigned in setWord (field size depends on aspect)
+        base[i*2]   = u; base[i*2+1] = v;
+        cell[i*2]   = u; cell[i*2+1] = v;
+        rand[i*2]   = Math.random();
+        rand[i*2+1] = Math.random();
+      }
+    }
+    this._baseUV = base;
+    this._world  = new Float32Array(n*2);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buf.cell);
+    gl.bufferData(gl.ARRAY_BUFFER, cell, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buf.rand);
+    gl.bufferData(gl.ARRAY_BUFFER, rand, gl.STATIC_DRAW);
+
+    // masks are lattice-sized, so old ones are useless after a rebuild
+    if(this._covCache) this._covCache.clear();
+  }
+
+  _uploadWorld(){
+    const gl = this.gl, n = this.count, uv = this._baseUV, out = this._world;
+    const fw = this.fieldW, fh = this.fieldH;
+    for(let i=0;i<n;i++){
+      out[i*2]   = (uv[i*2] - 0.5) * fw;
+      out[i*2+1] = (0.5 - uv[i*2+1]) * fh;
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buf.base);
+    gl.bufferData(gl.ARRAY_BUFFER, out, gl.STATIC_DRAW);
+  }
+
+  /* --- text mask, blurred into a coverage field ---------------- */
+  _coverage(word){
+    // masks are deterministic for a given word and lattice, so cache them:
+    // hovering the index previews states without rebuilding a blur each time
+    const key = word + "|" + this.cols + "x" + this.rows + "|" + (this.portrait?1:0);
+    this._covCache = this._covCache || new Map();
+    if(this._covCache.has(key)) return this._covCache.get(key);
+    const built = this._buildCoverage(word);
+    if(this._covCache.size > 32) this._covCache.clear();
+    this._covCache.set(key, built);
+    return built;
+  }
+
+  _buildCoverage(word){
+    const cols = this.cols, rows = this.rows;
+    // Draw the glyphs supersampled and average down. Thresholding a
+    // lattice-resolution render at >110 threw away every partially
+    // covered cell, which on a phone is most of the letterform.
+    const SS = 3;
+    const mw = cols * SS, mh = rows * SS;
+    const cv = this._maskCanvas || (this._maskCanvas = document.createElement("canvas"));
+    cv.width = mw; cv.height = mh;
+    const ctx = cv.getContext("2d", { willReadFrequently:true });
+    ctx.fillStyle = "#000"; ctx.fillRect(0,0,mw,mh);
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+
+    const font = s => `700 ${s}px Inter, Archivo, system-ui, sans-serif`;
+    // Portrait gets a taller cap and nearly the full measure, so the word
+    // is the hero rather than a caption floating in an empty field.
+    // Size by optical area, not just width. Width-fitting alone made WEB
+    // twice the ink of GRAPHIC; now every state carries the same weight.
+    const capH = mh * (this.portrait ? 0.30 : 0.40);
+    const maxW = mw * (this.portrait ? 0.92 : 0.66);
+    ctx.font = font(100);
+    const per = Math.max(0.01, (ctx.measureText(word).width || 1) / 100);
+    const area = maxW * mh * (this.portrait ? 0.10 : 0.22);
+    const size = Math.max(1, Math.min(capH, maxW / per, Math.sqrt(area / per)));
+    ctx.font = font(size);
+    ctx.letterSpacing = "0px";
+    ctx.fillText(word, mw*0.5, mh * (this.portrait ? 0.38 : 0.43));
+
+    const data = ctx.getImageData(0,0,mw,mh).data;
+    const hard = new Float32Array(cols*rows);
+    const inv = 1/(SS*SS*255);
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        let s = 0;
+        for(let sy=0;sy<SS;sy++){
+          let o = ((y*SS+sy)*mw + x*SS) * 4;
+          for(let sx=0;sx<SS;sx++){ s += data[o]; o += 4; }
+        }
+        hard[y*cols+x] = s * inv;
+      }
+    }
+
+    // three box-blur passes give a soft halo the dust can live in
+    let src = hard, dst = new Float32Array(cols*rows);
+    const R = 2;
+    for(let pass=0; pass<3; pass++){
+      for(let y=0;y<rows;y++){
+        for(let x=0;x<cols;x++){
+          let s=0,c=0;
+          for(let k=-R;k<=R;k++){
+            const xx = x+k;
+            if(xx<0||xx>=cols) continue;
+            s += src[y*cols+xx]; c++;
+          }
+          dst[y*cols+x] = s/c;
+        }
+      }
+      const t = src; src = dst; dst = (t===hard) ? new Float32Array(cols*rows) : t;
+      for(let x=0;x<cols;x++){
+        for(let y=0;y<rows;y++){
+          let s=0,c=0;
+          for(let k=-R;k<=R;k++){
+            const yy = y+k;
+            if(yy<0||yy>=rows) continue;
+            s += src[yy*cols+x]; c++;
+          }
+          dst[y*cols+x] = s/c;
+        }
+      }
+      const t2 = src; src = dst; dst = t2;
+    }
+
+    const out = new Float32Array(cols*rows);
+    for(let i=0;i<out.length;i++){
+      out[i] = Math.max(hard[i], src[i] * 0.86);
+    }
+    return out;
+  }
+
+  /* --- state change ------------------------------------------- */
+  /* opts: tag (project index, handed back through onMid / onRevert),
+     dir (+1 / -1), origin {nx,ny} the change came from, scrub (the
+     user drives progress), dur (override the morph length). */
+  setWord(word, immediate, opts){
+    if(!this.ok) return;
+    opts = opts || {};
+    const gl = this.gl;
+    const cov = this._coverage(word);
+
+    if(immediate){
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buf.covA);
+      gl.bufferData(gl.ARRAY_BUFFER, cov, gl.DYNAMIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buf.covB);
+      gl.bufferData(gl.ARRAY_BUFFER, cov, gl.DYNAMIC_DRAW);
+      this.word = this._fromWord = word;
+      if(opts.tag !== undefined) this._toTag = opts.tag;
+      this._fromTag = this._toTag;
+      this.mt = 1; this.morph = 1; this.mode = "auto";
+      this._fromSlot = "covA";
+      this._toSlot = "covB";
+      this._activeCov = "covB";
+      this._lastCov = cov;
+      this._pendingCov = null;
+      return;
+    }
+
+    // Interrupted past its midpoint, start from the word that was
+    // arriving rather than the one that already left.
+    const inFlight = this.mt < 1 && this._pendingCov;
+    const past = inFlight && this.morph > 0.5;
+    const fromCov = past ? this._pendingCov : (this._lastCov || cov);
+    this._fromWord = past ? this.word : (inFlight ? this._fromWord : this.word);
+    this._fromTag  = past ? this._toTag : (inFlight ? this._fromTag : this._toTag);
+    this._lastCov = fromCov;
+    const fromSlot = this._activeCov === "covA" ? "covB" : "covA";
+    const toSlot   = fromSlot === "covA" ? "covB" : "covA";
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buf[fromSlot]);
+    gl.bufferData(gl.ARRAY_BUFFER, fromCov, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buf[toSlot]);
+    gl.bufferData(gl.ARRAY_BUFFER, cov, gl.DYNAMIC_DRAW);
+
+    this.word = word;
+    if(opts.tag !== undefined) this._toTag = opts.tag;
+    this._pendingCov = cov;
+    this._fromSlot = fromSlot;
+    this._toSlot = toSlot;
+    this._activeCov = toSlot;
+    this.dir = opts.dir || 1;
+    this._dur = opts.dur || this.morphDur;
+    this.mode = opts.scrub ? "scrub" : "auto";
+    this.scrubT = 0;
+    this.mt = 0; this.morph = 0;
+    const o = opts.origin || { nx:0.5, ny:0.44 };
+    this.burstAt = this.toWorld(o.nx, o.ny);
+  }
+
+  /* scrubbing: the user holds the transition in their hand */
+  scrubTo(v){ if(this.mode === "scrub") this.scrubT = clamp(v, 0, 1); }
+  commit(){ if(this.mode === "scrub") this.mode = "auto"; }
+  revert(){ if(this.mode === "scrub") this.mode = "revert"; }
+
+  /* --- forces -------------------------------------------------- */
+  toWorld(nx, ny){
+    // approximate screen to world on the z=0 plane, corrected for parallax
+    return [
+      (nx - 0.5) * this.fieldW + this.cam.px * 0.55,
+      (0.5 - ny) * this.fieldH + this.cam.py * 0.55
+    ];
+  }
+
+  pointer(nx, ny, inside){
+    const [wx, wy] = this.toWorld(nx, ny);
+    const now = performance.now();
+    if(this.mouse.seen){
+      // Velocity per second, not per event: a 1000Hz mouse and a 60Hz
+      // trackpad now leave the same wake for the same gesture.
+      const dt = clamp((now - this._pt) / 1000, 0.004, 0.1);
+      const vx = (wx - this.mouse.tx) / dt, vy = (wy - this.mouse.ty) / dt;
+      this.mouse.vx = lerp(this.mouse.vx, clamp(vx / 60, -1.6, 1.6), 0.5);
+      this.mouse.vy = lerp(this.mouse.vy, clamp(vy / 60, -1.6, 1.6), 0.5);
+      // speed is force: a flick tears the cloth, a resting hand barely dents it
+      this.mouse.boost = Math.max(this.mouse.boost, clamp(Math.hypot(vx, vy) * 0.028, 0, 1.05));
+    } else {
+      this.mouse.seen = true;
+      this.mouse.x = wx; this.mouse.y = wy;
+    }
+    this._pt = now;
+    this.mouse.tx = wx; this.mouse.ty = wy;
+    this.mouse.inside = inside && !REDUCED;
+    this.lastInput = this.time;
+    this.cam.tpx = clamp((nx-0.5) * 1.5, -0.9, 0.9);
+    this.cam.tpy = clamp((0.5-ny) * 1.0, -0.7, 0.7);
+  }
+
+  pulse(nx, ny, strength){
+    if(REDUCED) return;
+    const [wx, wy] = this.toWorld(nx, ny);
+    this.lastInput = this.time;
+    this.waves.push({ x:wx, y:wy, t0:this.time, s:strength || 1 });
+    if(this.waves.length > 6) this.waves.shift();
+  }
+
+  /* a shove to the camera: the room reacts to a big release */
+  kick(amount){
+    if(REDUCED) return;
+    this.sp.dolly.vel -= amount * 0.9;
+    this.sp.yaw.vel   += (Math.random() - 0.5) * amount * 0.25;
+    this.sp.pitch.vel += (Math.random() - 0.5) * amount * 0.18;
+  }
+
+  setFocus(on){ this.focus = !!on && !REDUCED; }
+
+  setCameraState(i){
+    // every project sits at a slightly different point in the same room
+    const a = Math.sin(i * 2.399), b = Math.cos(i * 1.717);
+    this.cam.tyaw   = REDUCED ? 0 : a * 0.055;
+    this.cam.tpitch = REDUCED ? 0 : b * 0.038;
+    this.cam.tdolly = REDUCED ? 1 : 1 + a * 0.055;
+  }
+
+  /* --- loop ---------------------------------------------------- */
+  start(){
+    if(!this.ok || this._running) return;
+    this._running = true;
+    let last = performance.now();
+    const loop = (now)=>{
+      if(this.disposed || !this._running) return;
+      this.raf = requestAnimationFrame(loop);
+      const dt = Math.min(0.05, (now - last)/1000);
+      last = now;
+      this._frame(dt);
+    };
+    this.raf = requestAnimationFrame(loop);
+  }
+
+  _frame(dt){
+    const gl = this.gl;
+    if(!gl || gl.isContextLost()) return;
+    this.time += REDUCED ? 0 : dt;
+    this._age += dt;
+    const k = 1 - Math.pow(0.001, dt);
+
+    /* adaptive quality: sample settled frames, step down once if slow */
+    if(!this.lowPower && this.mode === "auto" && this.mt >= 1 && this.quality > 0 && this._age > 3){
+      this._ft.push(dt);
+      if(this._ft.length >= 120){
+        const avg = this._ft.reduce((a,b)=>a+b, 0) / this._ft.length;
+        this._ft.length = 0;
+        if(avg > 1/46){ this.quality--; this._age = 0; this.resize(true); return; }
+      }
+    }
+
+    /* pointer: real input, or a phantom that wanders in after a pause
+       so the field demonstrates itself before anyone reads the copy */
+    const idle = this.time - this.lastInput;
+    this.mouse.boost = lerp(this.mouse.boost, 0, 1 - Math.pow(0.03, dt));
+    if(!REDUCED && idle > 4.5 && !this.focus){
+      const w = clamp((idle - 4.5) / 2.5, 0, 1);
+      const it = this.time * 0.16;
+      const px = Math.sin(it*1.3) * this.fieldW * 0.30 + Math.sin(it*0.41 + 2.0) * this.fieldW * 0.10;
+      const py = Math.sin(it*0.87 + 1.1) * this.fieldH * 0.22;
+      const f = dt > 0 ? (1/60) / dt : 1;
+      this.mouse.vx = lerp(this.mouse.vx, clamp((px - this.mouse.tx) * f, -1.6, 1.6), 0.3);
+      this.mouse.vy = lerp(this.mouse.vy, clamp((py - this.mouse.ty) * f, -1.6, 1.6), 0.3);
+      this.mouse.tx = px; this.mouse.ty = py;
+      this.mouse.ts = 0.5 * w;
+    } else {
+      this.mouse.ts = this.mouse.inside ? 0.32 + this.mouse.boost : 0;
+    }
+    this.mouse.x = lerp(this.mouse.x, this.mouse.tx, k*0.85);
+    this.mouse.y = lerp(this.mouse.y, this.mouse.ty, k*0.85);
+    this.mouse.s = lerp(this.mouse.s, this.mouse.ts, k*0.55);
+    this.mouse.vx = lerp(this.mouse.vx, 0, k*0.5);
+    this.mouse.vy = lerp(this.mouse.vy, 0, k*0.5);
+    this.charge = lerp(this.charge, this.chargeT, 1 - Math.pow(0.004, dt));
+    // while charging, the cursor stops pushing and starts pulling
+    const strength = lerp(this.mouse.s, -1.5, this.charge);
+
+    /* camera on springs */
+    const sp = this.sp, cam = this.cam;
+    sp.yaw.t   = this.focus ? cam.tyaw * 0.3 : cam.tyaw;
+    sp.pitch.t = cam.tpitch;
+    sp.dolly.t = this.focus ? 0.58 : cam.tdolly;
+    sp.px.t = this.focus ? 0 : cam.tpx;
+    sp.py.t = this.focus ? 0 : cam.tpy;
+    cam.yaw = sp.yaw.step(dt); cam.pitch = sp.pitch.step(dt); cam.dolly = sp.dolly.step(dt);
+    cam.px = sp.px.step(dt);   cam.py = sp.py.step(dt);
+
+    /* morph: auto runs on the clock, scrub follows the hand, revert unwinds */
+    const prev = this.mt;
+    if(this.mode === "auto" && this.mt < 1)      this.mt = Math.min(1, this.mt + dt / this._dur);
+    else if(this.mode === "scrub")               this.mt = lerp(this.mt, this.scrubT, 1 - Math.pow(0.0008, dt));
+    else if(this.mode === "revert")              this.mt = Math.max(0, this.mt - dt / (this._dur * 0.55));
+    const m = this.mt;
+    this.morph = m * m * (3 - 2 * m);
+    let burst = (m > 0 && m < 1) ? Math.pow(Math.sin(Math.PI * m), 1.9) * (REDUCED ? 0.15 : 1) : 0;
+    if(this.onMid){
+      if(prev < 0.5 && m >= 0.5) this.onMid(this._toTag);
+      else if(prev >= 0.5 && m < 0.5) this.onMid(this._fromTag);
+    }
+    if(this.mode === "revert" && m <= 0){
+      const tag = this._fromTag;
+      this.setWord(this._fromWord, true, { tag });
+      burst = 0;
+      if(this.onRevert) this.onRevert(tag);
+    }
+    if(this.mode === "auto" && m >= 1 && this._pendingCov){
+      this._lastCov = this._pendingCov;
+      this._pendingCov = null;
+    }
+    if(this.onFrame) this.onFrame(burst, dt);
+
+    // under an opaque overlay, keep the state moving but draw every other frame
+    if(this.lowPower){ this._flip = !this._flip; if(this._flip) return; }
+
+    // camera
+    const d = this.dist * cam.dolly;
+    const eye = this._eye;
+    eye[0] = Math.sin(cam.yaw) * d + cam.px;
+    eye[1] = Math.sin(cam.pitch) * d + cam.py;
+    eye[2] = Math.cos(cam.yaw) * Math.cos(cam.pitch) * d;
+    const view = M4.lookAt(eye, [0,0,0], [0,1,0], this._view);
+    const vp = M4.mul(this.proj, view, this._vp);
+
+    // waves
+    const wd = this._waveData;
+    wd.fill(0);
+    this.waves = this.waves.filter(w => this.time - w.t0 < 4.2);
+    for(let i=0; i<this.waves.length && i<6; i++){
+      const w = this.waves[i];
+      wd[i*4]   = w.x;
+      wd[i*4+1] = w.y;
+      wd[i*4+2] = this.time - w.t0;
+      wd[i*4+3] = w.s;
+    }
+
+    gl.useProgram(this.prog);
+    gl.uniformMatrix4fv(this.uni.uVP, false, vp);
+    gl.uniform1f(this.uni.uTime, REDUCED ? 12.5 : this.time);
+    gl.uniform1f(this.uni.uMorph, this.morph);
+    gl.uniform1f(this.uni.uBurst, burst);
+    gl.uniform1f(this.uni.uAmp, REDUCED ? 1.05 : 2.05);
+    gl.uniform1f(this.uni.uSize, 1.72 * this.dpr * this._sizeFactor);
+    gl.uniform1f(this.uni.uStill, REDUCED ? 0.25 : 1);
+    gl.uniform3f(this.uni.uMouse, this.mouse.x, this.mouse.y, strength);
+    gl.uniform2f(this.uni.uMouseVel, this.mouse.vx, this.mouse.vy);
+    gl.uniform1f(this.uni.uDir, this.dir);
+    gl.uniform2f(this.uni.uBurstAt, this.burstAt[0], this.burstAt[1]);
+    gl.uniform4fv(this.uni.uWaves, wd);
+
+    const bind = (loc, buf, size)=>{
+      if(loc < 0) return;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
+    };
+    bind(this.attr.base, this.buf.base, 2);
+    bind(this.attr.cell, this.buf.cell, 2);
+    bind(this.attr.rand, this.buf.rand, 2);
+    // "from" and "to" swap on every state change
+    const fromBuf = this._fromSlot ? this.buf[this._fromSlot] : this.buf.covA;
+    const toBuf   = this._toSlot   ? this.buf[this._toSlot]   : this.buf.covB;
+    bind(this.attr.covA, fromBuf, 1);
+    bind(this.attr.covB, toBuf, 1);
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, this.count);
+  }
+
+  dispose(){
+    this.disposed = true;
+    this._running = false;
+    cancelAnimationFrame(this.raf);
+    const gl = this.gl;
+    if(!gl) return;
+    Object.values(this.buf || {}).forEach(b => gl.deleteBuffer(b));
+    if(this.prog) gl.deleteProgram(this.prog);
+    this.canvas.removeEventListener("webglcontextlost", this._onLost);
+    this.canvas.removeEventListener("webglcontextrestored", this._onRestored);
+  }
+}
+
+/* ===============================================================
+   CUSTOM CURSOR
+   A dot that tracks exactly, a ring on a spring that lags and
+   settles with a hint of overshoot. Nothing else.
+   =============================================================== */
+class CustomCursor {
+  constructor(){
+    this.el = document.querySelector(".cursor");
+    this.dot = this.el.querySelector(".cur-dot");
+    this.ring = this.el.querySelector(".cur-ring");
+    this.x = innerWidth/2; this.y = innerHeight/2;
+    this.sx = new Spring(this.x, 260, 0.7);
+    this.sy = new Spring(this.y, 260, 0.7);
+    this._c = -1;
+    this.enabled = matchMedia("(pointer:fine)").matches && !REDUCED;
+    if(this.enabled) document.body.classList.add("custom-cursor");
+  }
+  start(){
+    if(!this.enabled) return;
+    let last = performance.now();
+    const loop = now=>{
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      this.sx.t = this.x; this.sy.t = this.y;
+      const rx = this.sx.step(dt), ry = this.sy.step(dt);
+      this.dot.style.transform = `translate(${this.x}px,${this.y}px) translate(-50%,-50%)`;
+      this.ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      this._raf = requestAnimationFrame(loop);
+    };
+    this._raf = requestAnimationFrame(loop);
+  }
+  move(x,y){ this.x = x; this.y = y; }
+  set(mode, on){ this.el.classList.toggle(mode, on); }
+  setCharge(c){
+    const v = Math.round(c * 100) / 100;
+    if(v === this._c) return;
+    this._c = v;
+    this.el.style.setProperty("--charge", String(v));
+  }
+  dispose(){ cancelAnimationFrame(this._raf); }
+}
+
+/* ===============================================================
+   APP
+   Wires the field to the index, the rail, the meta and the overlays.
+   =============================================================== */
+const SCRUB_PX = 420;          // wheel distance for a full transition
+
+class App {
+  constructor(){
+    this.index = 0;
+    this.scrub = null;         // {dir, target, p, acc}
+    this.lastPointer = { nx:0.5, ny:0.44 };
+    this.lastNav = 0;
+    this._gated = false;
+    this._introPlayed = false;
+    this._markAngle = 0;
+
+    this.stage = document.getElementById("stage");
+    this.canvas = document.getElementById("field");
+    this.fallback = document.getElementById("fallback");
+    this.rail = document.getElementById("rail");
+    this.meta = {
+      root: document.getElementById("projmeta"),
+      idx: document.getElementById("metaIndex"),
+      word: document.getElementById("metaWord"),
+      desc: document.getElementById("metaDesc")
+    };
+    this.live = document.getElementById("live");
+    this.mark = document.getElementById("mark");
+    this.markSvg = this.mark.querySelector("svg");
+
+    this.field = new GenerativeField(this.canvas);
+    this.cursor = new CustomCursor();
+  }
+
+  boot(){
+    const total = document.getElementById("metaTotal");
+    if(total) total.textContent = String(PROJECTS.length);
+
+    const ok = this.field.mount();
+    const intro = ok && !REDUCED;
+    if(ok){
+      // copy lands when the material becomes the word, not before
+      this.field.onMid = tag => this.writeMeta(tag);
+      this.field.onRevert = tag => this.writeMeta(tag);
+      // the header mark turns with the energy of each change
+      this.field.onFrame = (burst, dt)=>{
+        if(burst <= 0.001) return;
+        this._markAngle = (this._markAngle + burst * dt * 160) % 360;
+        this.markSvg.style.transform = `rotate(${this._markAngle.toFixed(2)}deg)`;
+      };
+      if(intro) this.field.word = "";      // begin as bare cloth
+      this.field.resize();
+      this.field.setCameraState(0);
+      if(intro) this.field.sp.dolly.snap(1.25);
+      this.field.start();
+      if(COARSE){
+        document.getElementById("note").innerHTML =
+          'Twenty-five years in-house: storefronts that load fast, products that ' +
+          'reach manufacture, artwork that reaches press. Swipe to pull the next ' +
+          'project through the field. Tap to send a shockwave through it.';
+      }
+    } else {
+      this.fallback.classList.add("is-on");
+      document.getElementById("note").innerHTML =
+        "Real-time rendering is unavailable on this device, so the field is shown as static type. Everything else works.";
+    }
+    if(!intro) document.body.classList.remove("intro");
+
+    const hint = document.getElementById("navHint");
+    if(hint) hint.textContent = COARSE ? "Swipe to navigate" : "Scroll to navigate";
+
+    this.buildRail();
+    this.buildWorkList();
+    this.bind();
+    this.cursor.start();
+    this.apply(0, true, { skipField:intro });
+    if(ok) this.awaitFont(intro);
+  }
+
+  /* The masks depend on the webfont. With motion on, the font landing
+     is the cue for the intro rather than a visible snap. */
+  awaitFont(intro){
+    const onFont = ()=>{
+      if(this.field.disposed) return;
+      if(intro && !this._introPlayed){ this.playIntro(); return; }
+      if(this.field.mt >= 1 && !this.scrub){
+        this.field.setWord(PROJECTS[this.index].word, true, { tag:this.index });
+      }
+    };
+    if(document.fonts && document.fonts.load){
+      document.fonts.load('700 48px Inter').catch(()=>{}).then(()=>document.fonts.ready).then(onFont, onFont);
+    } else onFont();
+    if(intro) setTimeout(()=>{ if(!this._introPlayed) this.playIntro(); }, 1600);
+  }
+
+  playIntro(){
+    this._introPlayed = true;
+    const f = this.field;
+    f.lastInput = f.time;
+    f.setWord(PROJECTS[this.index].word, false, { tag:this.index, dir:1, dur:2.6 });
+    setTimeout(()=>f.pulse(0.5, 0.44, 1.35), 650);
+    setTimeout(()=>this.reveal(), 520);
+  }
+
+  reveal(){
+    const els = document.querySelectorAll(".header > *, .ui > *, .footer > *");
+    els.forEach((el,i)=>el.style.setProperty("--i", i));
+    document.body.classList.add("revealed");
+    document.body.classList.remove("intro");
+    // drop the animation once done, so later inline styles win again
+    setTimeout(()=>document.body.classList.remove("revealed"), 2600);
+  }
+
+  /* --- project rail ------------------------------------------- */
+  buildRail(){
+    const frag = document.createDocumentFragment();
+    PROJECTS.forEach((p,i)=>{
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-label", `Project ${i+1}, ${p.word}`);
+      b.setAttribute("aria-current", i===0 ? "true" : "false");
+      b.innerHTML = `<span>${p.word}</span>`;
+      // the change radiates from the dot that asked for it
+      b.addEventListener("click", ()=>this.go(i, { origin:this.originOf(b) }));
+      frag.appendChild(b);
+    });
+    this.rail.appendChild(frag);
+    this.railBtns = Array.from(this.rail.children);
+  }
+
+  originOf(el){
+    const r = el.getBoundingClientRect(), s = this.stage.getBoundingClientRect();
+    return {
+      nx: clamp((r.left + r.width/2 - s.left) / s.width, 0, 1),
+      ny: clamp((r.top + r.height/2 - s.top) / s.height, 0, 1)
+    };
+  }
+
+  buildWorkList(){
+    const list = document.getElementById("workList");
+    const frag = document.createDocumentFragment();
+    PROJECTS.forEach((p,i)=>{
+      const li = document.createElement("li");
+      li.dataset.current = i===0 ? "true" : "false";
+      const b = document.createElement("button");
+      b.type = "button";
+      b.innerHTML =
+        `<span class="n">${String(i+1).padStart(2,"0")}</span>` +
+        `<span class="w">${p.word}${p.locked ? '<svg class="lock" viewBox="0 0 8 10" aria-hidden="true"><rect x=".5" y="4.5" width="7" height="5"/><path d="M2 4.5V3a2 2 0 0 1 4 0v1.5"/></svg>' : ""}</span>` +
+        `<span class="d">${p.discipline}</span>` +
+        `<span class="y">${p.year}</span>`;
+      // hovering a row previews that state in the field behind the overlay
+      b.addEventListener("pointerenter", e=>{ if(!REDUCED && e.pointerType !== "touch") this.preview(i); });
+      b.addEventListener("focus", ()=>{ if(!REDUCED) this.preview(i); });
+      b.addEventListener("click", ()=>{ this.go(i); this.overlays.close(); this.overlays.openProject(p, i); });
+      li.appendChild(b);
+      frag.appendChild(li);
+    });
+    list.appendChild(frag);
+    this.workItems = Array.from(list.children);
+  }
+
+  preview(i){
+    if(i === this.index || this.scrub) return;
+    this.go(i, { origin:{ nx:0.72, ny:0.44 }, quiet:true });
+  }
+
+  /* --- navigation --------------------------------------------- */
+  hideHint(){
+    if(this._hintHidden) return;
+    this._hintHidden = true;
+    const h = document.getElementById("navHint");
+    if(h) h.closest("p").style.cssText = "opacity:0;transition:opacity .6s var(--ease)";
+  }
+
+  go(i, opts){
+    opts = opts || {};
+    const n = PROJECTS.length;
+    const next = ((i % n) + n) % n;
+    if(this.scrub){ this.scrub = null; clearTimeout(this._wheelT); }
+    if(next === this.index && this.field.mt >= 1) return;
+    if(!opts.quiet) this.hideHint();
+    const dir = opts.dir || ((((next - this.index) % n) + n) % n <= n/2 ? 1 : -1);
+    this.apply(next, false, { dir, origin:opts.origin });
+  }
+  next(o){ this.go(this.index + 1, Object.assign({ dir:1 }, o)); }
+  prev(o){ this.go(this.index - 1, Object.assign({ dir:-1 }, o)); }
+
+  /* --- scrubbing: wheel and swipe drive the morph directly ----- */
+  beginScrub(dir){
+    const n = PROJECTS.length;
+    const target = ((this.index + dir) % n + n) % n;
+    this.scrub = { dir, target, p:0, acc:0 };
+    this.field.setWord(PROJECTS[target].word, false, { tag:target, dir, scrub:true, origin:this.lastPointer });
+    this.meta.root.classList.add("is-swapping");
+  }
+  updateScrub(p){
+    if(!this.scrub) return;
+    this.scrub.p = clamp(p, 0, 1);
+    this.field.scrubTo(this.scrub.p);
+  }
+  endScrub(commit){
+    const s = this.scrub;
+    if(!s) return;
+    this.scrub = null;
+    clearTimeout(this._wheelT);
+    if(commit){
+      this.field.commit();
+      this.hideHint();
+      this.apply(s.target, false, { skipField:true, dir:s.dir, origin:this.lastPointer });
+    } else {
+      this.field.revert();
+      // if a resize snapped the field mid-scrub, make sure the copy returns
+      clearTimeout(this._revertSafe);
+      this._revertSafe = setTimeout(()=>{
+        if(!this.scrub && this.meta.root.classList.contains("is-swapping")) this.writeMeta(this.index);
+      }, 1400);
+    }
+  }
+
+  /* --- meta ----------------------------------------------------- */
+  rollIdx(val){
+    const el = this.meta.idx;
+    const txt = String(val).padStart(2,"0");
+    if(!el.querySelector("span")){ el.innerHTML = `<span>${txt}</span>`; return; }
+    const s = el.querySelector("span");
+    const old = s.textContent;
+    if(old === txt) return;
+    const dir = val > parseInt(old,10) ? -1 : 1;
+    s.style.transition = "none";
+    s.style.transform = "translateY(0)";
+    void s.offsetWidth;
+    s.style.transition = "";
+    s.style.transform = `translateY(${-dir * 1.2}em)`;
+    clearTimeout(this._rollT);
+    this._rollT = setTimeout(()=>{
+      s.textContent = txt;
+      s.style.transition = "none";
+      s.style.transform = `translateY(${dir * 1.2}em)`;
+      void s.offsetWidth;
+      s.style.transition = "";
+      s.style.transform = "translateY(0)";
+    }, 200);
+  }
+
+  writeMeta(i){
+    const p = PROJECTS[i];
+    if(!p) return;
+    this.rollIdx(i+1);
+    this.meta.word.textContent = p.word;
+    this.meta.desc.textContent = p.desc;
+    const vl = document.getElementById("viewProject");
+    vl.classList.toggle("is-locked", !!p.locked && !Vault.open);
+    vl.setAttribute("aria-label", p.locked && !Vault.open ? "View project, private" : "View project");
+    const root = this.meta.root;
+    if(root.classList.contains("is-swapping")){
+      requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.remove("is-swapping")));
+    }
+  }
+
+  apply(i, immediate, opts){
+    opts = opts || {};
+    this.index = i;
+    const p = PROJECTS[i];
+    const animated = this.field.ok && !immediate;
+
+    if(this.field.ok){
+      if(!opts.skipField) this.field.setWord(p.word, !!immediate, { tag:i, dir:opts.dir || 1, origin:opts.origin });
+      this.field.setCameraState(i);
+      if(animated){
+        const o = opts.origin || { nx:0.5, ny:0.44 };
+        this.field.pulse(o.nx, o.ny, 0.6);   // the change is felt, not just seen
+      }
+    }
+    document.getElementById("fallbackWord").textContent = p.word;
+
+    // Copy lifts now and lands when the field crosses its midpoint.
+    const root = this.meta.root;
+    if(animated && !REDUCED){
+      root.classList.add("is-swapping");
+      if(this.field.mt >= 0.5) this.writeMeta(i);    // a scrub already past halfway
+      clearTimeout(this._metaSafe);
+      this._metaSafe = setTimeout(()=>{
+        if(root.classList.contains("is-swapping") && !this.scrub) this.writeMeta(this.index);
+      }, 2200);
+    } else {
+      this.writeMeta(i);
+    }
+
+    this.railBtns.forEach((b,k)=>b.setAttribute("aria-current", k===i ? "true" : "false"));
+    if(this.workItems) this.workItems.forEach((li,k)=>{ li.dataset.current = k===i ? "true":"false"; });
+
+    this.live.textContent = `Project ${i+1} of ${PROJECTS.length}. ${p.word}. ${p.desc}`;
+
+    // the header mark acknowledges the state change
+    this.mark.classList.add("is-pulsing");
+    clearTimeout(this._markT);
+    this._markT = setTimeout(()=>this.mark.classList.remove("is-pulsing"), 700);
+  }
+
+  /* --- input --------------------------------------------------- */
+  bind(){
+    const stage = this.stage;
+    const norm = (x,y)=>{
+      const r = stage.getBoundingClientRect();
+      return { nx:(x - r.left)/r.width, ny:(y - r.top)/r.height };
+    };
+
+    // pointer: field force + cursor (touch has its own handlers below)
+    const onMove = e=>{
+      if(e.pointerType === "touch") return;
+      this.cursor.move(e.clientX, e.clientY);
+      const { nx, ny } = norm(e.clientX, e.clientY);
+      const inside = nx > -0.05 && nx < 1.05 && ny > -0.05 && ny < 1.05;
+      if(inside) this.lastPointer = { nx:clamp(nx,0,1), ny:clamp(ny,0,1) };
+      if(this.field.ok) this.field.pointer(nx, ny, inside);
+      const onUI = !!e.target.closest("a,button");
+      this.cursor.set("on-field", inside && !onUI);
+      this.cursor.set("on-link", onUI);
+    };
+    window.addEventListener("pointermove", onMove, { passive:true });
+
+    /* hold to charge: the field is drawn in toward the cursor while the
+       button is down, and released as a shockwave scaled by the hold */
+    const chargeTick = ()=>{
+      if(!this.charging) return;
+      const held = (performance.now() - this.charging.t0) / 1000;
+      const c = clamp((held - 0.12) / 1.0, 0, 1);
+      this.charging.c = 1 - Math.pow(1 - c, 2);
+      this.field.chargeT = this.charging.c;
+      this.cursor.setCharge(this.charging.c);
+      this._chargeRaf = requestAnimationFrame(chargeTick);
+    };
+    const release = fire=>{
+      if(!this.charging) return;
+      const c = this.charging.c || 0;
+      this.charging = null;
+      cancelAnimationFrame(this._chargeRaf);
+      this.field.chargeT = 0;
+      this.cursor.setCharge(0);
+      if(fire && this.field.ok && !this.overlays.isOpen()){
+        const o = this.lastPointer;
+        this.field.pulse(o.nx, o.ny, 1.1 + c * 1.5);
+        if(c > 0.35) this.field.kick(c);
+      }
+    };
+    window.addEventListener("pointerdown", e=>{
+      if(e.pointerType === "touch") return;
+      this.cursor.set("is-down", true);
+      if(e.target.closest("a,button") || this.overlays.isOpen() || !this.field.ok || REDUCED) return;
+      const { nx, ny } = norm(e.clientX, e.clientY);
+      if(nx<0||nx>1||ny<0||ny>1) return;
+      this.charging = { t0:performance.now(), c:0 };
+      chargeTick();
+    }, { passive:true });
+    window.addEventListener("pointerup", e=>{
+      if(e.pointerType === "touch") return;
+      this.cursor.set("is-down", false);
+      release(true);
+    }, { passive:true });
+    window.addEventListener("pointercancel", ()=>{ this.cursor.set("is-down", false); release(false); });
+    window.addEventListener("blur", ()=>{ this.cursor.set("is-down", false); release(false); });
+
+    // wheel pulls the next state through the field, one hand on the morph
+    stage.addEventListener("wheel", e=>{
+      e.preventDefault();
+      if(this.overlays.isOpen()) return;
+      let d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if(e.deltaMode === 1) d *= 16; else if(e.deltaMode === 2) d *= stage.clientHeight;
+      const now = performance.now();
+
+      // After a commit, swallow the tail of trackpad inertia so one flick
+      // is one project, not three.
+      if(this._gated){
+        clearTimeout(this._gateT);
+        this._gateT = setTimeout(()=>{ this._gated = false; }, 200);
+        if(now - this._gateStart < 1100) return;
+        this._gated = false;
+      }
+
+      if(!this.field.ok){
+        if(Math.abs(d) > 30 && now - this.lastNav > 520){ d > 0 ? this.next() : this.prev(); this.lastNav = now; }
+        return;
+      }
+
+      if(!this.scrub){
+        if(Math.abs(d) < 1) return;
+        this.beginScrub(d > 0 ? 1 : -1);
+      }
+      const s = this.scrub;
+      s.acc += d * s.dir;
+      const p = s.acc / SCRUB_PX;
+      this.updateScrub(p);
+      const commit = ()=>{
+        this.endScrub(true);
+        this._gated = true; this._gateStart = performance.now();
+        clearTimeout(this._gateT);
+        this._gateT = setTimeout(()=>{ this._gated = false; }, 200);
+      };
+      if(p >= 1){ commit(); return; }
+      if(s.acc < -60){ this.endScrub(false); return; }
+      clearTimeout(this._wheelT);
+      // released: past a fifth commits, less falls back
+      this._wheelT = setTimeout(()=>{ if(this.scrub){ this.scrub.p > 0.18 ? commit() : this.endScrub(false); } }, 170);
+    }, { passive:false });
+
+    // touch: drag moves the cloth, a vertical drag scrubs, a tap is a shockwave
+    let t0 = null;
+    stage.addEventListener("touchstart", e=>{
+      const t = e.touches[0];
+      t0 = { x:t.clientX, y:t.clientY, time:performance.now(), moved:false,
+             onUI:!!e.target.closest("a,button"), ly:t.clientY, lt:performance.now(), v:0, navd:false };
+      const o = norm(t.clientX, t.clientY);
+      this.lastPointer = { nx:clamp(o.nx,0,1), ny:clamp(o.ny,0,1) };
+    }, { passive:true });
+    stage.addEventListener("touchmove", e=>{
+      if(!t0 || e.touches.length > 1) return;
+      const t = e.touches[0];
+      const o = norm(t.clientX, t.clientY);
+      this.lastPointer = { nx:clamp(o.nx,0,1), ny:clamp(o.ny,0,1) };
+      if(this.field.ok) this.field.pointer(o.nx, o.ny, true);
+      const dx = t.clientX - t0.x, dy = t.clientY - t0.y;
+      if(!t0.moved && Math.hypot(dx,dy) > 10) t0.moved = true;
+      const now = performance.now();
+      if(now > t0.lt) t0.v = lerp(t0.v, (t0.ly - t.clientY) / (now - t0.lt), 0.5);   // px/ms, up is +
+      t0.ly = t.clientY; t0.lt = now;
+      if(t0.onUI || this.overlays.isOpen()) return;
+      const vertical = Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx) * 1.2;
+      if(!this.field.ok){
+        if(!t0.navd && Math.abs(dy) > 46 && vertical){ t0.navd = true; dy < 0 ? this.next() : this.prev(); }
+        return;
+      }
+      if(vertical && !this.scrub) this.beginScrub(dy < 0 ? 1 : -1);
+      if(this.scrub) this.updateScrub((-dy * this.scrub.dir - 12) / (stage.clientHeight * 0.32));
+    }, { passive:true });
+    const touchEnd = ()=>{
+      if(!t0) return;
+      if(this.scrub){
+        const fling = t0.v * this.scrub.dir > 0.45;
+        this.endScrub(this.scrub.p > 0.3 || (fling && this.scrub.p > 0.04));
+      } else if(!t0.moved && !t0.onUI && performance.now() - t0.time < 350 && this.field.ok){
+        const o = this.lastPointer;
+        this.field.pulse(o.nx, o.ny, 1.1);
+      }
+      if(this.field.ok) this.field.pointer(.5,.5,false);
+      t0 = null;
+    };
+    stage.addEventListener("touchend", touchEnd, { passive:true });
+    stage.addEventListener("touchcancel", touchEnd, { passive:true });
+
+    // keyboard
+    window.addEventListener("keydown", e=>{
+      if(this.overlays.isOpen()){
+        if(e.key === "Escape") this.overlays.close();
+        return;
+      }
+      switch(e.key){
+        case "ArrowDown": case "ArrowRight": case "PageDown": e.preventDefault(); this.next(); break;
+        case "ArrowUp": case "ArrowLeft": case "PageUp": e.preventDefault(); this.prev(); break;
+        case "Home": e.preventDefault(); this.go(0); break;
+        case "End": e.preventDefault(); this.go(PROJECTS.length-1); break;
+      }
+    });
+
+    // resize
+    let rt;
+    window.addEventListener("resize", ()=>{
+      clearTimeout(rt);
+      rt = setTimeout(()=>{ if(this.field.ok) this.field.resize(); }, 180);
+    });
+
+    // pause when hidden, so a background tab costs nothing
+    document.addEventListener("visibilitychange", ()=>{
+      if(document.hidden){ this.field._running = false; cancelAnimationFrame(this.field.raf); }
+      else if(this.field.ok && !this.field.disposed){ this.field.start(); }
+    });
+
+    // overlays
+    this.overlays = new OverlayManager(this);
+    const vp = document.getElementById("viewProject");
+    vp.addEventListener("click", ()=>{
+      this.overlays.openProject(PROJECTS[this.index], this.index);
+    });
+
+    // mobile pager
+    const prevBtn = document.getElementById("pagerPrev");
+    const nextBtn = document.getElementById("pagerNext");
+    if(prevBtn) prevBtn.addEventListener("click", ()=>this.prev({ origin:{ nx:0.2, ny:0.85 } }));
+    if(nextBtn) nextBtn.addEventListener("click", ()=>this.next({ origin:{ nx:0.8, ny:0.85 } }));
+  }
+}
+
+/* ===============================================================
+   MARQUEE
+   A draggable filmstrip with gentle auto-scroll. Position is a float
+   driven through transform, not scrollLeft: scrollLeft rounds to whole
+   pixels in several browsers, which stalled a 0.35px/frame drift
+   entirely, and the old speed doubled on 120Hz screens. Everything
+   here is per second. Loops by duplicating the content and wrapping
+   at the seam.
+   =============================================================== */
+class Marquee {
+  constructor(root){
+    this.root = root;
+    this.track = root.querySelector("#marqueeTrack");
+    this.toggle = document.getElementById("marqueeToggle");
+    this.toggleLabel = document.getElementById("marqueeToggleLabel");
+    this.items = [];
+    this.paused = false;
+    this.gen = 0;
+    this.pos = 0;
+    this._autoSpeed = 26;       // px per second
+    this._raf = 0;
+    this._dragging = false;
+    this._ssTimers = [];
+    this._halfW = 0;
+    this._momentum = 0;         // px per second
+    this._hold = 0;
+
+    if(this.toggle) this.toggle.addEventListener("click", ()=>this.togglePause());
+
+    const xOf = e => (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+    let sx = 0, sp = 0;
+    const onDown = e => {
+      this._dragging = true;
+      this._dragged = false;
+      this._momentum = 0;
+      this._lastX = xOf(e);
+      sx = this._lastX;
+      sp = this.pos;
+      this._lastT = performance.now();
+    };
+    const onMove = e => {
+      if(!this._dragging) return;
+      const x = (e.touches && !e.touches[0]) ? this._lastX : xOf(e);
+      const dx = x - this._lastX;
+      if(Math.abs(x - sx) > 5) this._dragged = true;
+      const now = performance.now();
+      const dt = now - this._lastT;
+      if(dt > 0) this._momentum = lerp(this._momentum, -dx / dt * 1000, 0.6);
+      this._lastX = x;
+      this._lastT = now;
+      this.pos = sp - (x - sx);
+      this._render();
+    };
+    const onUp = () => {
+      // a drag that stopped before release should not fling
+      if(this._dragging && performance.now() - this._lastT > 90) this._momentum = 0;
+      this._dragging = false;
+    };
+
+    this.root.addEventListener("mousedown", e=>{ e.preventDefault(); onDown(e); });
+    window.addEventListener("mousemove", e=>{ if(this._dragging) onMove(e); });
+    window.addEventListener("mouseup", onUp);
+    this.root.addEventListener("touchstart", onDown, { passive:true });
+    this.root.addEventListener("touchmove", onMove, { passive:true });
+    this.root.addEventListener("touchend", onUp, { passive:true });
+    this.root.addEventListener("wheel", e=>{
+      const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if(!d) return;
+      e.preventDefault();
+      this.pos += d * (e.deltaMode === 1 ? 16 : 1);
+      this._momentum = 0;
+      this._hold = performance.now() + 1400;   // let the reader look before drifting on
+      this._render();
+    }, { passive:false });
+  }
+  load(media){
+    const gen = ++this.gen;
+    this.items = media || [];
+    this._ssTimers.forEach(clearInterval);
+    this._ssTimers = [];
+    this.track.innerHTML = "";
+    this._setPaused(false);
+    this._momentum = 0;
+    this.pos = 0;
+    this._halfW = 0;
+    this._render();
+    const build = ()=>this.items.map(item=>this._make(item));
+    const fresh = build();
+    const echo = build();
+    fresh.forEach(el=>this.track.appendChild(el));
+    echo.forEach(el=>{ el.setAttribute("aria-hidden","true"); this.track.appendChild(el); });
+    this._startWhenReady(gen, fresh.concat(echo));
+  }
+  _startWhenReady(gen, elements){
+    const waitImg = el => {
+      if(el.complete) return el.decode ? el.decode().catch(()=>{}) : Promise.resolve();
+      return new Promise(res=>{
+        el.addEventListener("load", ()=>(el.decode ? el.decode().catch(()=>{}).then(res) : res()), { once:true });
+        el.addEventListener("error", res, { once:true });
+      });
+    };
+    const ready = elements.flatMap(el=>{
+      if(el.tagName === "VIDEO"){
+        if(el.readyState >= 1) return [Promise.resolve()];
+        return [new Promise(res=>{
+          el.addEventListener("loadedmetadata", res, { once:true });
+          el.addEventListener("error", res, { once:true });
+        })];
+      }
+      if(el.tagName === "IMG") return [waitImg(el)];
+      const imgs = Array.from(el.querySelectorAll("img"));
+      if(imgs.length) return imgs.map(waitImg);
+      return [Promise.resolve()];
+    });
+    const timeout = new Promise(res=>setTimeout(res, 3000));
+    Promise.race([Promise.all(ready), timeout]).then(()=>{
+      if(gen !== this.gen) return;
+      this._halfW = this.track.scrollWidth / 2;
+      this._startLoop();
+    });
+  }
+  _wrap(){
+    if(this._halfW > 0) this.pos = ((this.pos % this._halfW) + this._halfW) % this._halfW;
+  }
+  _render(){
+    this._wrap();
+    this.track.style.transform = `translate3d(${(-this.pos).toFixed(2)}px,0,0)`;
+    if(this._bar && this._halfW > 0) this._bar.style.transform = `scaleX(${(this.pos / this._halfW).toFixed(4)})`;
+  }
+  _startLoop(){
+    cancelAnimationFrame(this._raf);
+    if(this._vidObs) this._vidObs.disconnect();
+    this._vidObs = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(e.target.tagName !== "VIDEO") return;
+        if(e.isIntersecting) e.target.play().catch(()=>{});
+        else e.target.pause();
+      });
+    }, { root:this.root, threshold:0.25 });
+    this.track.querySelectorAll("video").forEach(v=>this._vidObs.observe(v));
+    // the strip height follows the viewport, so frame widths (and the
+    // loop seam) change on resize; re-measure rather than jump at the seam
+    if(this._ro) this._ro.disconnect();
+    if(window.ResizeObserver){
+      this._ro = new ResizeObserver(()=>{ const w = this.track.scrollWidth / 2; if(w > 0) this._halfW = w; });
+      this._ro.observe(this.track);
+    }
+    this._bar = document.getElementById("marqueeBar");
+    let last = performance.now();
+    const tick = now=>{
+      this._raf = requestAnimationFrame(tick);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if(this._dragging) return;
+      if(Math.abs(this._momentum) > 9){
+        this.pos += this._momentum * dt;
+        this._momentum *= Math.pow(0.046, dt);
+      } else {
+        this._momentum = 0;
+        if(!this.paused && !REDUCED && now > this._hold) this.pos += this._autoSpeed * dt;
+      }
+      this._render();
+    };
+    this._raf = requestAnimationFrame(tick);
+  }
+  _make(item){
+    let el;
+    if(item.type === "slideshow"){
+      el = document.createElement("div");
+      el.className = "slideshow";
+      const sizer = document.createElement("img");
+      sizer.className = "ss-sizer";
+      sizer.src = item.slides[0].src;
+      sizer.alt = "";
+      el.appendChild(sizer);
+      const dotsWrap = document.createElement("div");
+      dotsWrap.className = "ss-dots";
+      const label = document.createElement("span");
+      label.className = "ss-label";
+      label.textContent = item.slides[0].label || "";
+      let cur = 0;
+      const figures = item.slides.map((s,i)=>{
+        const fig = document.createElement("div");
+        fig.className = "ss-slide" + (i===0 ? " is-active" : "");
+        const img = document.createElement("img");
+        img.src = s.src; img.alt = s.alt || "";
+        fig.appendChild(img);
+        el.appendChild(fig);
+        return fig;
+      });
+      const dots = item.slides.map((_,i)=>{
+        const d = document.createElement("button");
+        d.type = "button"; d.className = "ss-dot" + (i===0 ? " is-active" : "");
+        d.setAttribute("aria-label", "Show slide " + (i+1));
+        d.addEventListener("click", ()=>{ show(i); restart(); });
+        dotsWrap.appendChild(d);
+        return d;
+      });
+      const show = i => {
+        figures[cur].classList.remove("is-active");
+        dots[cur].classList.remove("is-active");
+        cur = i;
+        figures[cur].classList.add("is-active");
+        dots[cur].classList.add("is-active");
+        label.textContent = item.slides[cur].label || "";
+      };
+      let timer;
+      const restart = ()=>{
+        if(REDUCED) return;
+        clearInterval(timer);
+        timer = setInterval(()=>show((cur+1)%item.slides.length), item.interval||4000);
+        if(!this._ssTimers.includes(timer)) this._ssTimers.push(timer);
+      };
+      restart();
+      el.appendChild(label);
+      el.appendChild(dotsWrap);
+    } else if(item.type === "overlay"){
+      el = document.createElement("div");
+      el.className = "hover-card";
+      el.setAttribute("aria-label", item.alt || "");
+      const base = document.createElement("img");
+      base.className = "base";
+      base.src = item.overlay;
+      base.alt = "";
+      const top = document.createElement("img");
+      top.className = "top";
+      top.src = item.src;
+      top.alt = item.alt || "";
+      el.appendChild(base);
+      el.appendChild(top);
+    } else if(item.type === "video"){
+      el = document.createElement("video");
+      el.muted = true; el.loop = true; el.playsInline = true; el.preload = "metadata";
+      el.setAttribute("aria-label", item.alt || "");
+      (item.sources || [{ src:item.src, mime:item.mime }]).forEach(s=>{
+        const source = document.createElement("source");
+        source.src = s.src;
+        if(s.mime) source.type = s.mime;
+        el.appendChild(source);
+      });
+    } else {
+      el = document.createElement("img");
+      el.alt = item.alt || "";
+      el.src = item.src;
+    }
+    return el;
+  }
+  togglePause(){
+    this._setPaused(!this.paused);
+  }
+  _setPaused(state){
+    this.paused = state;
+    if(this.toggle) this.toggle.setAttribute("aria-pressed", String(state));
+    if(this.toggleLabel) this.toggleLabel.textContent = state ? "Play" : "Pause";
+    const pauseIco = this.toggle && this.toggle.querySelector(".ico-pause");
+    const playIco = this.toggle && this.toggle.querySelector(".ico-play");
+    if(pauseIco) pauseIco.hidden = state;
+    if(playIco) playIco.hidden = !state;
+  }
+  freeze(){
+    this._setPaused(true);
+    cancelAnimationFrame(this._raf);
+    this._ssTimers.forEach(clearInterval);
+    this._ssTimers = [];
+    if(this._vidObs) this._vidObs.disconnect();
+    this.track.querySelectorAll("video").forEach(v=>{ v.pause(); v.currentTime = 0; });
+  }
+}
+
+/* ===============================================================
+   OVERLAY MANAGER
+   Work index, studio, contact, project detail. Escape closes,
+   focus returns where it came from.
+   =============================================================== */
+class OverlayManager {
+  constructor(app){
+    this.app = app;
+    this.current = null;
+    this.trigger = null;
+    this.panels = {
+      menu: document.getElementById("ov-menu"),
+      work: document.getElementById("ov-work"),
+      studio: document.getElementById("ov-studio"),
+      contact: document.getElementById("ov-contact"),
+      project: document.getElementById("ov-project")
+    };
+    this.media = new Marquee(document.getElementById("marquee"));
+    document.querySelectorAll("[data-open]").forEach(btn=>{
+      btn.addEventListener("click", ()=>this.open(btn.dataset.open, btn));
+    });
+    document.querySelectorAll("[data-close]").forEach(btn=>{
+      btn.addEventListener("click", ()=>this.close());
+    });
+    Object.values(this.panels).forEach(p=>{
+      p.addEventListener("click", e=>{ if(e.target === p) this.close(); });
+    });
+    document.getElementById("backToWork").addEventListener("click", ()=>{
+      this.close();
+      this.open("work");
+    });
+    document.getElementById("detailPrev").addEventListener("click", ()=>this.navProject(-1));
+    document.getElementById("detailNext").addEventListener("click", ()=>this.navProject(1));
+    document.addEventListener("keydown", e=>{
+      if(!this.current) return;
+      const typing = e.target && e.target.matches && e.target.matches("input,textarea");
+      if(this.current === this.panels.project && !typing){
+        if(e.key === "ArrowLeft"){ e.preventDefault(); this.navProject(-1); return; }
+        if(e.key === "ArrowRight"){ e.preventDefault(); this.navProject(1); return; }
+      }
+      if(e.key !== "Tab") return;
+      const items = Array.from(this.current.querySelectorAll(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )).filter(el => el.offsetParent !== null);
+      if(!items.length) return;
+      const first = items[0], last = items[items.length-1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    });
+    this._projectIndex = 0;
+    this._bindVault();
+
+    const lb = document.getElementById("lightbox");
+    const lbImg = document.getElementById("lightboxImg");
+    const lbClose = ()=>{ lb.hidden = true; lbImg.style.transform = ""; lbImg.style.opacity = ""; };
+    document.getElementById("lightboxClose").addEventListener("click", lbClose);
+    lb.addEventListener("click", e=>{ if(e.target === lb) lbClose(); });
+    document.addEventListener("keydown", e=>{ if(e.key === "Escape" && !lb.hidden){ e.stopPropagation(); lbClose(); }}, true);
+    document.getElementById("marqueeTrack").addEventListener("click", e=>{
+      const img = e.target.closest("img");
+      if(!img || this.media._dragged) return;
+      // FLIP: the image grows out of its frame in the strip rather than
+      // fading in from nowhere
+      const from = img.getBoundingClientRect();
+      lbImg.style.transition = "none";
+      lbImg.style.transform = "";
+      lbImg.style.opacity = REDUCED ? "" : "0";
+      lbImg.src = img.src;
+      lbImg.alt = img.alt;
+      lb.hidden = false;
+      if(REDUCED) return;
+      const run = ()=>{
+        const to = lbImg.getBoundingClientRect();
+        if(!to.width || !to.height){ lbImg.style.opacity = ""; return; }
+        lbImg.style.transformOrigin = "0 0";
+        lbImg.style.transform =
+          `translate(${from.left - to.left}px,${from.top - to.top}px) scale(${from.width / to.width},${from.height / to.height})`;
+        lbImg.style.opacity = "1";
+        void lbImg.offsetWidth;
+        lbImg.style.transition = "transform .7s var(--ease)";
+        lbImg.style.transform = "none";
+      };
+      if(lbImg.complete && lbImg.naturalWidth) requestAnimationFrame(run);
+      else lbImg.addEventListener("load", ()=>requestAnimationFrame(run), { once:true });
+    });
+  }
+  _clearGhost(){
+    (this._ghostTimers || []).forEach(clearInterval);
+    this._ghostTimers = [];
+    if(this._ghostObs){ this._ghostObs.disconnect(); this._ghostObs = null; }
+    const track = document.getElementById("vaultGhost");
+    track.querySelectorAll("video").forEach(v=>{ v.pause(); v.removeAttribute("src"); v.load(); });
+    track.innerHTML = "";
+  }
+  _ghost(p){
+    const vault = document.getElementById("vault");
+    const track = document.getElementById("vaultGhost");
+    this._clearGhost();
+    const list = ((typeof PREVIEWS !== "undefined" && PREVIEWS[p.word]) || [])
+      .filter(x=>x && (x.src || (x.slides && x.slides.length)));
+    vault.classList.toggle("has-ghost", list.length > 0);
+    if(!list.length) return;
+
+    // The real work, in black and white and just out of focus. Videos
+    // loop and slideshows cycle, as they do in the open strip; GIFs
+    // animate on their own. Twice over so the drift loops without a seam.
+    const make = item=>{
+      if(item.type === "video"){
+        const v = document.createElement("video");
+        v.muted = true; v.loop = true; v.playsInline = true;
+        v.setAttribute("muted",""); v.setAttribute("playsinline","");
+        v.preload = REDUCED ? "metadata" : "auto";
+        const srcs = item.sources || [{ src:item.src }];
+        srcs.forEach(s=>{
+          const so = document.createElement("source");
+          so.src = REDUCED ? s.src + "#t=1" : s.src;
+          if(s.mime) so.type = s.mime;
+          v.appendChild(so);
+        });
+        return v;
+      }
+      if(item.type === "slideshow"){
+        const wrap = document.createElement("div");
+        wrap.className = "g-ss ht";
+        const sizer = document.createElement("img");
+        sizer.className = "g-sizer"; sizer.src = item.slides[0]; sizer.alt = "";
+        wrap.appendChild(sizer);
+        const slides = item.slides.map((src,i)=>{
+          const im = document.createElement("img");
+          im.className = "g-slide" + (i === 0 ? " is-on" : "");
+          im.src = src; im.alt = ""; im.decoding = "async";
+          wrap.appendChild(im);
+          return im;
+        });
+        if(!REDUCED && slides.length > 1){
+          let cur = 0;
+          this._ghostTimers.push(setInterval(()=>{
+            slides[cur].classList.remove("is-on");
+            cur = (cur + 1) % slides.length;
+            slides[cur].classList.add("is-on");
+          }, item.interval || 4000));
+        }
+        return wrap;
+      }
+      const im = document.createElement("img");
+      im.src = item.src; im.alt = ""; im.decoding = "async";
+      return im;
+    };
+    // every frame sits in a halftone cell (a slideshow is its own cell)
+    const ready = (cell, media)=>{
+      const go = ()=>requestAnimationFrame(()=>cell.classList.add("is-ready"));
+      if(media.tagName === "VIDEO"){
+        if(media.readyState >= 2) go();
+        else media.addEventListener("loadeddata", go, { once:true });
+      } else if(media.complete && media.naturalWidth){
+        go();
+      } else {
+        media.addEventListener("load", go, { once:true });
+      }
+      media.addEventListener("error", go, { once:true });   // never leave a gap waiting
+    };
+    const cell = item=>{
+      const el = make(item);
+      el.setAttribute("draggable","false");
+      let w = el;
+      if(!el.classList.contains("ht")){
+        w = document.createElement("div");
+        w.className = "ht";
+        w.appendChild(el);
+      }
+      // a slideshow is ready when its first visible slide is
+      ready(w, w.querySelector(".g-slide.is-on") || w.querySelector("img,video"));
+      return w;
+    };
+    const frag = document.createDocumentFragment();
+    for(let r=0;r<2;r++) list.forEach(item=>frag.appendChild(cell(item)));
+    track.appendChild(frag);
+    track.style.setProperty("--ghost-dur", Math.max(40, list.length * 8) + "s");
+
+    // only the videos actually in view decode
+    if(!REDUCED && "IntersectionObserver" in window){
+      this._ghostObs = new IntersectionObserver(entries=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting) e.target.play().catch(()=>{});
+          else e.target.pause();
+        });
+      }, { root:vault, threshold:0 });
+      track.querySelectorAll("video").forEach(v=>this._ghostObs.observe(v));
+    }
+  }
+  _bindVault(){
+    const form = document.getElementById("vaultForm");
+    const input = document.getElementById("vaultInput");
+    const row = document.getElementById("vaultRow");
+    const btn = document.getElementById("vaultBtn");
+    const label = document.getElementById("vaultBtnLabel");
+    const msg = document.getElementById("vaultMsg");
+    const vault = document.getElementById("vault");
+    input.addEventListener("input", ()=>{ row.classList.remove("is-wrong"); msg.textContent = ""; });
+    form.addEventListener("submit", async e=>{
+      e.preventDefault();
+      const pass = input.value.trim();
+      if(!pass){ input.focus(); return; }
+      btn.setAttribute("aria-busy","true"); label.textContent = "Checking";
+      let ok = false;
+      try { ok = await Vault.unlock(pass); }
+      catch(err){ msg.textContent = "This browser cannot open the archive. Request access and I will send the work directly."; }
+      btn.removeAttribute("aria-busy"); label.textContent = "Unlock";
+      const f = this.app.field;
+      if(!ok){
+        if(!msg.textContent) msg.textContent = "That passcode did not open the archive. Check it and try again.";
+        row.classList.remove("is-wrong"); void row.offsetWidth; row.classList.add("is-wrong");
+        input.select();
+        if(f.ok){ f.kick(0.25); }
+        return;
+      }
+      input.value = "";
+      this.app.writeMeta(this.app.index);   // drops the lock from the hero link
+      this.app.live.textContent = "Archive unlocked. All projects are open.";
+      if(f.ok){ f.lowPower = false; f.pulse(0.5, 0.44, 2.2); f.kick(1); }
+      const p = PROJECTS[this._projectIndex];
+      const reveal = ()=>{
+        const wrap = document.getElementById("projMedia");
+        const vr = vault.getBoundingClientRect(), pr = wrap.getBoundingClientRect();
+        this._dissolving = !REDUCED;
+        this._fillProject(p);
+        // hold the dissolving panel over the incoming strip
+        if(!REDUCED){
+          vault.hidden = false;
+          vault.classList.add("is-opening", "is-leaving");
+          vault.style.top = (vr.top - pr.top) + "px";
+          vault.style.height = vr.height + "px";
+          requestAnimationFrame(()=>requestAnimationFrame(()=>{ if(vault.classList.contains("is-leaving")) vault.classList.add("is-gone"); }));
+          setTimeout(()=>{
+            vault.classList.remove("is-opening", "is-leaving", "is-gone");
+            vault.style.top = ""; vault.style.height = "";
+            vault.hidden = true;
+            this._dissolving = false;
+            this._clearGhost();
+          }, 1250);
+        }
+        const mq = document.getElementById("marquee");
+        if(!REDUCED){
+          mq.classList.remove("is-revealing"); void mq.offsetWidth; mq.classList.add("is-revealing");
+          setTimeout(()=>mq.classList.remove("is-revealing"), 1100);
+        }
+        const back = document.getElementById("backToWork");
+        if(back) back.focus({ preventScroll:true });
+      };
+      if(REDUCED){ reveal(); return; }
+      vault.classList.add("is-opening");
+      setTimeout(reveal, 650);
+    });
+  }
+  isOpen(){ return !!this.current; }
+  open(name, trigger){
+    const panel = this.panels[name];
+    if(!panel) return;
+    if(this.current) this.close(true);
+    clearTimeout(panel._closeT);
+    panel.classList.remove("is-closing");
+    this.trigger = trigger || null;
+    this.current = panel;
+    panel.hidden = false;
+    panel.classList.add("is-open");
+    document.body.classList.add("has-overlay");
+    const f = this.app.field;
+    if(f.ok){
+      if(name === "project"){
+        // dive into the glyph: the camera dollies in, the material bursts
+        f.setFocus(true);
+        f.pulse(0.5, 0.44, 1.25);
+        f.kick(0.5);
+      } else {
+        f.pulse(0.5, 0.5, 0.7);
+      }
+      // Under anything but the work index (which previews states), the
+      // field only needs to breathe: draw at half rate behind the blur.
+      clearTimeout(this._lpT);
+      f.lowPower = false;
+      if(name !== "work") this._lpT = setTimeout(()=>{ if(this.current === panel) f.lowPower = true; }, 1000);
+    }
+    const first = panel.querySelector("button, a, [tabindex]");
+    if(first) first.focus({ preventScroll:true });
+    document.querySelectorAll("[data-open]").forEach(b=>{
+      b.setAttribute("aria-expanded", b.dataset.open === name ? "true" : "false");
+    });
+  }
+  openProject(p, idx){
+    if(idx !== undefined) this._projectIndex = idx;
+    else this._projectIndex = PROJECTS.indexOf(p);
+    this._fillProject(p);
+    this.open("project", document.getElementById("viewProject"));
+  }
+  _fillProject(p){
+    document.getElementById("dTitle").textContent = p.word;
+    document.getElementById("dSummary").textContent = p.summary;
+    document.getElementById("dYear").textContent = p.year;
+    document.getElementById("dClient").textContent = p.client;
+    document.getElementById("dRole").textContent = p.role;
+    document.getElementById("dStack").textContent = p.stack;
+    document.getElementById("detailCounter").textContent =
+      String(this._projectIndex + 1).padStart(2,"0") + " / " + PROJECTS.length;
+    const mediaWrap = document.getElementById("projMedia");
+    const vault = document.getElementById("vault");
+    const locked = !!p.locked && !Vault.open;
+    mediaWrap.classList.toggle("is-locked", locked);
+    vault.hidden = !locked;
+    vault.classList.remove("is-opening", "is-leaving", "is-gone");
+    vault.style.top = ""; vault.style.height = "";
+    if(locked){
+      mediaWrap.hidden = false;
+      this.media.freeze();
+      document.getElementById("vaultWord").textContent = p.word;
+      this._ghost(p);
+      document.getElementById("vaultMsg").textContent = "";
+      document.getElementById("vaultRow").classList.remove("is-wrong");
+    } else if(p.media && p.media.length){
+      mediaWrap.hidden = false;
+      // leaving a locked project: stop its ghost, unless it is the one
+      // dissolving over this strip right now
+      if(!this._dissolving) this._clearGhost();
+      this.media.load(p.media);
+    } else {
+      mediaWrap.hidden = true;
+      this.media.freeze();
+    }
+  }
+  navProject(dir){
+    if(this.current !== this.panels.project) return;
+    const n = PROJECTS.length;
+    this._projectIndex = ((this._projectIndex + dir) % n + n) % n;
+    const p = PROJECTS[this._projectIndex];
+    const body = document.getElementById("detailBody");
+    body.classList.add("is-fading");
+    this.media.freeze();
+    setTimeout(()=>{
+      this._fillProject(p);
+      body.classList.remove("is-fading");
+    }, 300);
+    this.app.go(this._projectIndex);
+  }
+  close(instant){
+    if(!this.current) return;
+    const panel = this.current;
+    if(panel === this.panels.project){
+      this.media.freeze();
+      // stop the locked-panel media, unless this close is only the
+      // project panel being reopened with the next project
+      Promise.resolve().then(()=>{ if(this.current !== panel) this._clearGhost(); });
+    }
+    panel.classList.remove("is-open");
+    this.current = null;
+    document.body.classList.remove("has-overlay");
+    const f = this.app.field;
+    clearTimeout(this._lpT);
+    f.lowPower = false;
+    f.setFocus(false);       // and back out of the material
+    if(instant || REDUCED){
+      panel.hidden = true;
+    } else {
+      panel.classList.add("is-closing");
+      clearTimeout(panel._closeT);
+      panel._closeT = setTimeout(()=>{ panel.classList.remove("is-closing"); panel.hidden = true; }, 340);
+    }
+    document.querySelectorAll("[data-open]").forEach(b=>b.setAttribute("aria-expanded","false"));
+    if(this.trigger){
+      const t = this.trigger; this.trigger = null;
+      // A panel opened from inside the menu has a trigger that is no
+      // longer rendered; sending focus there drops it to <body>.
+      if(t.offsetParent !== null){ t.focus({ preventScroll:true }); }
+      else {
+        const mb = document.querySelector(".menu-btn");
+        if(mb && mb.offsetParent !== null) mb.focus({ preventScroll:true });
+      }
+    }
+  }
+}
+
+/* ===============================================================
+   START
+   =============================================================== */
+const app = new App();
+app.boot();
+Vault.restore().then(ok=>{ if(ok) app.writeMeta(app.index); });
+window.addEventListener("pagehide", e=>{ if(e.persisted) return; app.field.dispose(); app.cursor.dispose(); });
+
+// Safari has no requestIdleCallback; without the guard this threw.
+const idle = window.requestIdleCallback || (fn => setTimeout(fn, 1200));
+idle(()=>{
+  PROJECTS.forEach(p=>{
+    if(!p.media || !p.media.length) return;
+    const first = p.media[0];
+    const src = first.type === "slideshow" ? first.slides[0].src
+              : first.type === "video" ? null
+              : first.src;
+    if(src){ const img = new Image(); img.src = src; }
+  });
+}, { timeout:3000 });
+</script>
+</body>
+</html>
